@@ -314,6 +314,10 @@ export class ZeroCenteredRange extends Range {
         for (i = 3; ; i += 2) {
             if (this.toHeight(r / i) <= h)
                 break;
+            if (i>100) {
+                console.log('强制退出');
+                return 0;
+            }
         }
         i -= 2;
         return r / i;

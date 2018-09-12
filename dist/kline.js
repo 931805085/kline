@@ -283,20 +283,20 @@ function () {
 
           switch (style) {
             case "CandleStick":
-              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["h" /* CandlestickPlotter */](plotterName);
+              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["f" /* CandlestickPlotter */](plotterName);
               break;
 
             case "CandleStickHLC":
-              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["g" /* CandlestickHLCPlotter */](plotterName);
+              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["e" /* CandlestickHLCPlotter */](plotterName);
               break;
 
             case "OHLC":
-              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["E" /* OHLCPlotter */](plotterName);
+              plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["C" /* OHLCPlotter */](plotterName);
               break;
           }
 
           this.setPlotter(plotterName, plotter);
-          plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["D" /* MinMaxPlotter */](areaName + ".decoration");
+          plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["B" /* MinMaxPlotter */](areaName + ".decoration");
           this.setPlotter(plotter.getName(), plotter);
           break;
 
@@ -305,7 +305,7 @@ function () {
           this.setDataProvider(dp.getName(), dp);
           dp.setIndicator(new __WEBPACK_IMPORTED_MODULE_2__indicators__["g" /* HLCIndicator */]());
           this.removeMainIndicator(dsName);
-          plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["y" /* IndicatorPlotter */](plotterName);
+          plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["w" /* IndicatorPlotter */](plotterName);
           this.setPlotter(plotterName, plotter);
           this.removePlotter(areaName + ".decoration");
           break;
@@ -1276,7 +1276,7 @@ function () {
       var plotter = this.getPlotter(indicDpName);
 
       if (plotter === undefined) {
-        plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["y" /* IndicatorPlotter */](indicDpName);
+        plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["w" /* IndicatorPlotter */](indicDpName);
         this.setPlotter(plotter.getName(), plotter);
       }
 
@@ -1317,7 +1317,7 @@ function () {
       range.setMinInterval(20);
 
       if (__WEBPACK_IMPORTED_MODULE_12__util__["a" /* Util */].isInstance(indic, __WEBPACK_IMPORTED_MODULE_2__indicators__["s" /* VOLUMEIndicator */])) {
-        var plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["A" /* LastVolumePlotter */](areaName + "Range.decoration");
+        var plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["y" /* LastVolumePlotter */](areaName + "Range.decoration");
         this.setPlotter(plotter.getName(), plotter);
       } else if (__WEBPACK_IMPORTED_MODULE_12__util__["a" /* Util */].isInstance(indic, __WEBPACK_IMPORTED_MODULE_2__indicators__["a" /* BOLLIndicator */]) || __WEBPACK_IMPORTED_MODULE_12__util__["a" /* Util */].isInstance(indic, __WEBPACK_IMPORTED_MODULE_2__indicators__["p" /* SARIndicator */])) {
         var _dp = new __WEBPACK_IMPORTED_MODULE_7__data_providers__["b" /* MainDataProvider */](areaName + ".main");
@@ -1326,7 +1326,7 @@ function () {
 
         _dp.updateData();
 
-        var _plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["E" /* OHLCPlotter */](areaName + ".main");
+        var _plotter = new __WEBPACK_IMPORTED_MODULE_9__plotters__["C" /* OHLCPlotter */](areaName + ".main");
 
         this.setPlotter(_plotter.getName(), _plotter);
       }
@@ -1639,6 +1639,7 @@ function (_DataSource) {
     _classCallCheck(this, MainDataSource);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(MainDataSource).call(this, name));
+    _this._prependedCount = 0;
     _this._erasedCount = 0;
     _this._dataItems = [];
     _this._decimalDigits = 0;
@@ -1665,6 +1666,11 @@ function (_DataSource) {
     key: "getAppendedCount",
     value: function getAppendedCount() {
       return this._appendedCount;
+    }
+  }, {
+    key: "getPrependCount",
+    value: function getPrependCount() {
+      return this._prependedCount;
     }
   }, {
     key: "getErasedCount",
@@ -1710,6 +1716,7 @@ function (_DataSource) {
       this._updatedCount = 0;
       this._appendedCount = 0;
       this._erasedCount = 0;
+      this._prependedCount = 0;
       var len = this._dataItems.length;
 
       if (len > 0) {
@@ -1728,6 +1735,12 @@ function (_DataSource) {
           if (firstDate > data[_cnt - 1][0]) {
             for (_i = 0; _i < _cnt; _i++) {
               _e = data[_i];
+
+              for (n = 1; n <= 4; n++) {
+                d = this.calcDecimalDigits(_e[n]);
+                if (this._decimalDigits < d) this._decimalDigits = d;
+              }
+
               prependItem.push({
                 date: _e[0],
                 open: _e[1],
@@ -1738,7 +1751,8 @@ function (_DataSource) {
               });
             }
 
-            this.setUpdateMode(DataSource.UpdateMode.Append);
+            this.setUpdateMode(DataSource.UpdateMode.Prepend);
+            this._prependedCount += prependItem.length;
 
             this._dataItems.unshift(prependItem);
 
@@ -1746,6 +1760,11 @@ function (_DataSource) {
           } else if (firstDate <= data[_cnt - 1][0]) {
             for (_i = 0; _i < _cnt; _i++) {
               _e = data[_i];
+
+              for (n = 1; n <= 4; n++) {
+                d = this.calcDecimalDigits(_e[n]);
+                if (this._decimalDigits < d) this._decimalDigits = d;
+              }
 
               if (_e[0] < firstDate) {
                 prependItem.push({
@@ -1757,7 +1776,8 @@ function (_DataSource) {
                   volume: _e[5]
                 });
               } else {
-                this.setUpdateMode(DataSource.UpdateMode.Append);
+                this.setUpdateMode(DataSource.UpdateMode.Prepend);
+                this._prependedCount += prependItem.length;
 
                 this._dataItems.unshift(prependItem);
 
@@ -1775,6 +1795,12 @@ function (_DataSource) {
               this.setUpdateMode(DataSource.UpdateMode.DoNothing);
             } else {
               this.setUpdateMode(DataSource.UpdateMode.Update);
+
+              for (n = 1; n <= 4; n++) {
+                d = this.calcDecimalDigits(_e[n]);
+                if (this._decimalDigits < d) this._decimalDigits = d;
+              }
+
               this._dataItems[lastIndex] = {
                 date: _e[0],
                 open: _e[1],
@@ -1794,6 +1820,11 @@ function (_DataSource) {
               for (; _i < _cnt; _i++, this._appendedCount++) {
                 _e = data[_i];
 
+                for (n = 1; n <= 4; n++) {
+                  d = this.calcDecimalDigits(_e[n]);
+                  if (this._decimalDigits < d) this._decimalDigits = d;
+                }
+
                 this._dataItems.push({
                   date: _e[0],
                   open: _e[1],
@@ -1802,6 +1833,8 @@ function (_DataSource) {
                   close: _e[4],
                   volume: _e[5]
                 });
+
+                this._appendedCount++;
               }
             }
 
@@ -1814,7 +1847,6 @@ function (_DataSource) {
 
       }
 
-      console.log("update");
       this.setUpdateMode(DataSource.UpdateMode.Refresh);
       this._dataItems = [];
       var d,
@@ -3427,29 +3459,29 @@ function () {
       mgr.setRange(range.getName(), range);
       range.setPaddingTop(28);
       range.setPaddingBottom(12);
-      var plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["B" /* MainAreaBackgroundPlotter */](areaName + ".background");
+      var plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["z" /* MainAreaBackgroundPlotter */](areaName + ".background");
       mgr.setPlotter(plotter.getName(), plotter);
       plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["c" /* CGridPlotter */](areaName + ".grid");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["h" /* CandlestickPlotter */](areaName + ".main");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["f" /* CandlestickPlotter */](areaName + ".main");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["D" /* MinMaxPlotter */](areaName + ".decoration");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["B" /* MinMaxPlotter */](areaName + ".decoration");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["C" /* MainInfoPlotter */](areaName + ".info");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["A" /* MainInfoPlotter */](areaName + ".info");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["I" /* SelectionPlotter */](areaName + ".selection");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["G" /* SelectionPlotter */](areaName + ".selection");
       mgr.setPlotter(plotter.getName(), plotter);
       plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["b" /* CDynamicLinePlotter */](areaName + ".tool");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["F" /* RangeAreaBackgroundPlotter */](areaName + "Range.background");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["D" /* RangeAreaBackgroundPlotter */](areaName + "Range.background");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["f" /* COrderGraphPlotter */](areaName + "Range.grid");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["d" /* COrderGraphPlotter */](areaName + "Range.grid");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["G" /* RangePlotter */](areaName + "Range.main");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["E" /* RangePlotter */](areaName + "Range.main");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["H" /* RangeSelectionPlotter */](areaName + "Range.selection");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["F" /* RangeSelectionPlotter */](areaName + "Range.selection");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["z" /* LastClosePlotter */](areaName + "Range.decoration");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["x" /* LastClosePlotter */](areaName + "Range.decoration");
       mgr.setPlotter(plotter.getName(), plotter);
     }
   }, {
@@ -3489,21 +3521,21 @@ function () {
         return;
       }
 
-      var plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["B" /* MainAreaBackgroundPlotter */](areaName + ".background");
+      var plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["z" /* MainAreaBackgroundPlotter */](areaName + ".background");
       mgr.setPlotter(plotter.getName(), plotter);
       plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["c" /* CGridPlotter */](areaName + ".grid");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["y" /* IndicatorPlotter */](areaName + ".secondary");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["w" /* IndicatorPlotter */](areaName + ".secondary");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["x" /* IndicatorInfoPlotter */](areaName + ".info");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["v" /* IndicatorInfoPlotter */](areaName + ".info");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["I" /* SelectionPlotter */](areaName + ".selection");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["G" /* SelectionPlotter */](areaName + ".selection");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["F" /* RangeAreaBackgroundPlotter */](areaName + "Range.background");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["D" /* RangeAreaBackgroundPlotter */](areaName + "Range.background");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["G" /* RangePlotter */](areaName + "Range.main");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["E" /* RangePlotter */](areaName + "Range.main");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["H" /* RangeSelectionPlotter */](areaName + "Range.selection");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["F" /* RangeSelectionPlotter */](areaName + "Range.selection");
       mgr.setPlotter(plotter.getName(), plotter);
     }
   }, {
@@ -3513,11 +3545,11 @@ function () {
       var plotter;
       var timeline = new __WEBPACK_IMPORTED_MODULE_6__timeline__["a" /* Timeline */](dsName);
       mgr.setTimeline(timeline.getName(), timeline);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["J" /* TimelineAreaBackgroundPlotter */](dsName + ".timeline.background");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["H" /* TimelineAreaBackgroundPlotter */](dsName + ".timeline.background");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["K" /* TimelinePlotter */](dsName + ".timeline.main");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["I" /* TimelinePlotter */](dsName + ".timeline.main");
       mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["L" /* TimelineSelectionPlotter */](dsName + ".timeline.selection");
+      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["J" /* TimelineSelectionPlotter */](dsName + ".timeline.selection");
       mgr.setPlotter(plotter.getName(), plotter);
     }
   }, {
@@ -3526,9 +3558,8 @@ function () {
       var mgr = __WEBPACK_IMPORTED_MODULE_0__chart_manager__["a" /* ChartManager */].instance;
       var plotter;
       plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["a" /* BackgroundPlotter */](dsName + ".main.background");
-      mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["CLiveOrderPlotter"](dsName + ".main.main");
-      mgr.setPlotter(plotter.getName(), plotter);
+      mgr.setPlotter(plotter.getName(), plotter); // plotter = new plotters.CLiveOrderPlotter(dsName + ".main.main");
+      // mgr.setPlotter(plotter.getName(), plotter);
     }
   }, {
     key: "createLiveTradeComps",
@@ -3536,9 +3567,8 @@ function () {
       var mgr = __WEBPACK_IMPORTED_MODULE_0__chart_manager__["a" /* ChartManager */].instance;
       var plotter;
       plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["a" /* BackgroundPlotter */](dsName + ".main.background");
-      mgr.setPlotter(plotter.getName(), plotter);
-      plotter = new __WEBPACK_IMPORTED_MODULE_5__plotters__["CLiveTradePlotter"](dsName + ".main.main");
-      mgr.setPlotter(plotter.getName(), plotter);
+      mgr.setPlotter(plotter.getName(), plotter); // plotter = new plotters.CLiveTradePlotter(dsName + ".main.main");
+      // mgr.setPlotter(plotter.getName(), plotter);
     }
   }]);
 
@@ -5054,7 +5084,7 @@ function (_CBiToolObject) {
     _classCallCheck(this, CBandLineObject);
 
     _this4 = _possibleConstructorReturn(this, _getPrototypeOf(CBandLineObject).call(this, name));
-    _this4.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["j" /* DrawBandLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this4)));
+    _this4.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["h" /* DrawBandLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this4)));
     return _this4;
   }
 
@@ -5099,7 +5129,7 @@ function (_CTriToolObject) {
     _classCallCheck(this, CBiParallelLineObject);
 
     _this5 = _possibleConstructorReturn(this, _getPrototypeOf(CBiParallelLineObject).call(this, name));
-    _this5.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["k" /* DrawBiParallelLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this5)));
+    _this5.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["i" /* DrawBiParallelLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this5)));
     return _this5;
   }
 
@@ -5167,7 +5197,7 @@ function (_CTriToolObject2) {
     _classCallCheck(this, CBiParallelRayLineObject);
 
     _this6 = _possibleConstructorReturn(this, _getPrototypeOf(CBiParallelRayLineObject).call(this, name));
-    _this6.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["l" /* DrawBiParallelRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this6)));
+    _this6.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["j" /* DrawBiParallelRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this6)));
     return _this6;
   }
 
@@ -5240,7 +5270,7 @@ function (_CBiToolObject2) {
     _classCallCheck(this, CFibFansObject);
 
     _this7 = _possibleConstructorReturn(this, _getPrototypeOf(CFibFansObject).call(this, name));
-    _this7.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["m" /* DrawFibFansPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this7)));
+    _this7.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["k" /* DrawFibFansPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this7)));
     return _this7;
   }
 
@@ -5318,7 +5348,7 @@ function (_CBiToolObject3) {
     _classCallCheck(this, CFibRetraceObject);
 
     _this8 = _possibleConstructorReturn(this, _getPrototypeOf(CFibRetraceObject).call(this, name));
-    _this8.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["n" /* DrawFibRetracePlotter */](name, _assertThisInitialized(_assertThisInitialized(_this8)));
+    _this8.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["l" /* DrawFibRetracePlotter */](name, _assertThisInitialized(_assertThisInitialized(_this8)));
     return _this8;
   }
 
@@ -5363,7 +5393,7 @@ function (_CBiToolObject4) {
     _classCallCheck(this, CHoriRayLineObject);
 
     _this9 = _possibleConstructorReturn(this, _getPrototypeOf(CHoriRayLineObject).call(this, name));
-    _this9.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["o" /* DrawHoriRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this9)));
+    _this9.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["m" /* DrawHoriRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this9)));
     return _this9;
   }
 
@@ -5424,7 +5454,7 @@ function (_CBiToolObject5) {
     _classCallCheck(this, CHoriSegLineObject);
 
     _this10 = _possibleConstructorReturn(this, _getPrototypeOf(CHoriSegLineObject).call(this, name));
-    _this10.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["p" /* DrawHoriSegLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this10)));
+    _this10.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["n" /* DrawHoriSegLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this10)));
     return _this10;
   }
 
@@ -5485,7 +5515,7 @@ function (_CBiToolObject6) {
     _classCallCheck(this, CHoriStraightLineObject);
 
     _this11 = _possibleConstructorReturn(this, _getPrototypeOf(CHoriStraightLineObject).call(this, name));
-    _this11.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["q" /* DrawHoriStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this11)));
+    _this11.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["o" /* DrawHoriStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this11)));
     return _this11;
   }
 
@@ -5529,7 +5559,7 @@ function (_CBiToolObject7) {
     _classCallCheck(this, CRayLineObject);
 
     _this12 = _possibleConstructorReturn(this, _getPrototypeOf(CRayLineObject).call(this, name));
-    _this12.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["s" /* DrawRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this12)));
+    _this12.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["q" /* DrawRayLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this12)));
     return _this12;
   }
 
@@ -5575,7 +5605,7 @@ function (_CBiToolObject8) {
     _classCallCheck(this, CSegLineObject);
 
     _this13 = _possibleConstructorReturn(this, _getPrototypeOf(CSegLineObject).call(this, name));
-    _this13.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["t" /* DrawSegLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this13)));
+    _this13.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["r" /* DrawSegLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this13)));
     return _this13;
   }
 
@@ -5615,7 +5645,7 @@ function (_CBiToolObject9) {
     _classCallCheck(this, CStraightLineObject);
 
     _this14 = _possibleConstructorReturn(this, _getPrototypeOf(CStraightLineObject).call(this, name));
-    _this14.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["u" /* DrawStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this14)));
+    _this14.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["s" /* DrawStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this14)));
     return _this14;
   }
 
@@ -5651,7 +5681,7 @@ function (_CTriToolObject3) {
     _classCallCheck(this, CTriParallelLineObject);
 
     _this15 = _possibleConstructorReturn(this, _getPrototypeOf(CTriParallelLineObject).call(this, name));
-    _this15.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["v" /* DrawTriParallelLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this15)));
+    _this15.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["t" /* DrawTriParallelLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this15)));
     return _this15;
   }
 
@@ -5752,7 +5782,7 @@ function (_CBiToolObject10) {
     _classCallCheck(this, CVertiStraightLineObject);
 
     _this16 = _possibleConstructorReturn(this, _getPrototypeOf(CVertiStraightLineObject).call(this, name));
-    _this16.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["w" /* DrawVertiStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this16)));
+    _this16.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["u" /* DrawVertiStraightLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this16)));
     return _this16;
   }
 
@@ -5796,7 +5826,7 @@ function (_CSegLineObject) {
     _classCallCheck(this, CPriceLineObject);
 
     _this17 = _possibleConstructorReturn(this, _getPrototypeOf(CPriceLineObject).call(this, name));
-    _this17.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["r" /* DrawPriceLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this17)));
+    _this17.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["p" /* DrawPriceLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this17)));
     return _this17;
   }
 
@@ -5847,7 +5877,7 @@ function (_CSegLineObject2) {
     _classCallCheck(this, CArrowLineObject);
 
     _this18 = _possibleConstructorReturn(this, _getPrototypeOf(CArrowLineObject).call(this, name));
-    _this18.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["i" /* DrawArrowLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this18)));
+    _this18.drawer = new __WEBPACK_IMPORTED_MODULE_5__plotters__["g" /* DrawArrowLinesPlotter */](name, _assertThisInitialized(_assertThisInitialized(_this18)));
     return _this18;
   }
 
@@ -5861,43 +5891,43 @@ function (_CSegLineObject2) {
 "use strict";
 /* unused harmony export Plotter */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BackgroundPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "B", function() { return MainAreaBackgroundPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "F", function() { return RangeAreaBackgroundPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "J", function() { return TimelineAreaBackgroundPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "z", function() { return MainAreaBackgroundPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "D", function() { return RangeAreaBackgroundPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "H", function() { return TimelineAreaBackgroundPlotter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CGridPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return CandlestickPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return CandlestickHLCPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "E", function() { return OHLCPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "C", function() { return MainInfoPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "y", function() { return IndicatorPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "x", function() { return IndicatorInfoPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "D", function() { return MinMaxPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "K", function() { return TimelinePlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "G", function() { return RangePlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return COrderGraphPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "A", function() { return LastVolumePlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "z", function() { return LastClosePlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "I", function() { return SelectionPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "L", function() { return TimelineSelectionPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "H", function() { return RangeSelectionPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return CandlestickPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return CandlestickHLCPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "C", function() { return OHLCPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "A", function() { return MainInfoPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "w", function() { return IndicatorPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "v", function() { return IndicatorInfoPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "B", function() { return MinMaxPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "I", function() { return TimelinePlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "E", function() { return RangePlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return COrderGraphPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "y", function() { return LastVolumePlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "x", function() { return LastClosePlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "G", function() { return SelectionPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "J", function() { return TimelineSelectionPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "F", function() { return RangeSelectionPlotter; });
 /* unused harmony export CToolPlotter */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "u", function() { return DrawStraightLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return DrawSegLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return DrawRayLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return DrawArrowLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return DrawHoriStraightLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return DrawHoriRayLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return DrawHoriSegLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "w", function() { return DrawVertiStraightLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return DrawPriceLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "s", function() { return DrawStraightLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "r", function() { return DrawSegLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "q", function() { return DrawRayLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return DrawArrowLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return DrawHoriStraightLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return DrawHoriRayLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return DrawHoriSegLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "u", function() { return DrawVertiStraightLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return DrawPriceLinesPlotter; });
 /* unused harmony export ParallelLinesPlotter */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return DrawBiParallelLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return DrawBiParallelRayLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "v", function() { return DrawTriParallelLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return DrawBiParallelLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return DrawBiParallelRayLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "t", function() { return DrawTriParallelLinesPlotter; });
 /* unused harmony export BandLinesPlotter */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return DrawFibRetracePlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return DrawBandLinesPlotter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return DrawFibFansPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return DrawFibRetracePlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return DrawBandLinesPlotter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return DrawFibFansPlotter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CDynamicLinePlotter; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__kline__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__named_object__ = __webpack_require__(1);
@@ -9413,18 +9443,42 @@ function (_DataProvider2) {
 
         case __WEBPACK_IMPORTED_MODULE_3__data_sources__["a" /* DataSource */].UpdateMode.Append:
           {
-            indic.reserve(ds.getAppendedCount());
+            var i,
+                last = ds.getDataCount();
+            var cnt = ds.getAppendedCount();
+            indic.reserve(cnt);
+
+            for (i = last - cnt; i < last; i++) {
+              indic.execute(ds, i);
+            }
+
             break;
           }
 
         case __WEBPACK_IMPORTED_MODULE_3__data_sources__["a" /* DataSource */].UpdateMode.Update:
           {
-            var i,
-                last = ds.getDataCount();
-            var cnt = ds.getUpdatedCount() + ds.getAppendedCount();
+            var _i,
+                _last = ds.getDataCount();
 
-            for (i = last - cnt; i < last; i++) {
-              indic.execute(ds, i);
+            var _cnt = ds.getUpdatedCount() + ds.getAppendedCount();
+
+            for (_i = _last - _cnt; _i < _last; _i++) {
+              indic.execute(ds, _i);
+            }
+
+            break;
+          }
+
+        case __WEBPACK_IMPORTED_MODULE_3__data_sources__["a" /* DataSource */].UpdateMode.Prepend:
+          {
+            var _i2;
+
+            var _cnt2 = ds.getPrependCount();
+
+            indic.reserve(_cnt2);
+
+            for (_i2 = 0; _i2 < _cnt2; _i2++) {
+              indic.execute(ds, _i2);
             }
 
             break;
@@ -14721,6 +14775,11 @@ function (_Range4) {
 
       for (i = 3;; i += 2) {
         if (this.toHeight(r / i) <= h) break;
+
+        if (i > 100) {
+          console.log('强制退出');
+          return 0;
+        }
       }
 
       i -= 2;

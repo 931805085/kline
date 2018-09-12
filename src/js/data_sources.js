@@ -43,6 +43,7 @@ export class MainDataSource extends DataSource {
 
     constructor(name) {
         super(name);
+        this._prependedCount = 0;
         this._erasedCount = 0;
         this._dataItems = [];
         this._decimalDigits = 0;
@@ -63,6 +64,10 @@ export class MainDataSource extends DataSource {
 
     getAppendedCount() {
         return this._appendedCount;
+    }
+
+    getPrependCount() {
+        return this._prependedCount;
     }
 
     getErasedCount() {
@@ -98,6 +103,7 @@ export class MainDataSource extends DataSource {
         this._updatedCount = 0;
         this._appendedCount = 0;
         this._erasedCount = 0;
+        this._prependedCount = 0;
         let len = this._dataItems.length;
         if (len > 0) {
             let lastIndex = len - 1;
@@ -110,6 +116,11 @@ export class MainDataSource extends DataSource {
                 if (firstDate > data[cnt-1][0]) {
                     for(i = 0; i < cnt; i++) {
                         e = data[i];
+                        for (n = 1; n <= 4; n++) {
+                            d = this.calcDecimalDigits(e[n]);
+                            if (this._decimalDigits < d)
+                                this._decimalDigits = d;
+                        }
                         prependItem.push({
                             date: e[0],
                             open: e[1],
@@ -119,12 +130,18 @@ export class MainDataSource extends DataSource {
                             volume: e[5]
                         });
                     }
-                    this.setUpdateMode(DataSource.UpdateMode.Append);
+                    this.setUpdateMode(DataSource.UpdateMode.Prepend);
+                    this._prependedCount += prependItem.length;
                     this._dataItems.unshift(prependItem);
                     return true;
                 } else if (firstDate <= data[cnt-1][0]) {
                     for(i = 0; i < cnt; i++) {
                         e = data[i];
+                        for (n = 1; n <= 4; n++) {
+                            d = this.calcDecimalDigits(e[n]);
+                            if (this._decimalDigits < d)
+                                this._decimalDigits = d;
+                        }
                         if (e[0] < firstDate) {
                             prependItem.push({
                                 date: e[0],
@@ -135,7 +152,8 @@ export class MainDataSource extends DataSource {
                                 volume: e[5]
                             });
                         } else {
-                            this.setUpdateMode(DataSource.UpdateMode.Append);
+                            this.setUpdateMode(DataSource.UpdateMode.Prepend);
+                            this._prependedCount += prependItem.length;
                             this._dataItems.unshift(prependItem);
                             return true;
                         }
@@ -155,6 +173,11 @@ export class MainDataSource extends DataSource {
                         this.setUpdateMode(DataSource.UpdateMode.DoNothing);
                     } else {
                         this.setUpdateMode(DataSource.UpdateMode.Update);
+                        for (n = 1; n <= 4; n++) {
+                            d = this.calcDecimalDigits(e[n]);
+                            if (this._decimalDigits < d)
+                                this._decimalDigits = d;
+                        }
                         this._dataItems[lastIndex] = {
                             date: e[0],
                             open: e[1],
@@ -170,6 +193,11 @@ export class MainDataSource extends DataSource {
                         this.setUpdateMode(DataSource.UpdateMode.Append);
                         for (; i < cnt; i++, this._appendedCount++) {
                             e = data[i];
+                            for (n = 1; n <= 4; n++) {
+                                d = this.calcDecimalDigits(e[n]);
+                                if (this._decimalDigits < d)
+                                    this._decimalDigits = d;
+                            }
                             this._dataItems.push({
                                 date: e[0],
                                 open: e[1],
@@ -178,6 +206,7 @@ export class MainDataSource extends DataSource {
                                 close: e[4],
                                 volume: e[5]
                             });
+                            this._appendedCount++;
                         }
                     }
                     return true;
@@ -188,7 +217,6 @@ export class MainDataSource extends DataSource {
             //     return false;
             // }
         }
-        console.log("update");
         this.setUpdateMode(DataSource.UpdateMode.Refresh);
         this._dataItems = [];
         let d, n, e, i, cnt = data.length;

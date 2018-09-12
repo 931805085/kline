@@ -150,7 +150,12 @@ export class IndicatorDataProvider extends DataProvider {
                 break;
             }
             case data_sources.DataSource.UpdateMode.Append: {
-                indic.reserve(ds.getAppendedCount());
+                let i, last = ds.getDataCount();
+                let cnt = ds.getAppendedCount()
+                indic.reserve(cnt);
+                for (i = last - cnt; i < last; i++) {
+                    indic.execute(ds, i);
+                }
                 break;
             }
             case data_sources.DataSource.UpdateMode.Update: {
@@ -161,6 +166,16 @@ export class IndicatorDataProvider extends DataProvider {
                 }
                 break;
             }
+            case data_sources.DataSource.UpdateMode.Prepend: {
+                let i
+                let cnt = ds.getPrependCount();
+                indic.reserve(cnt);
+                for (i = 0; i < cnt; i++) {
+                    indic.execute(ds, i);
+                }
+                break;
+            }
+            
         }
     }
 
