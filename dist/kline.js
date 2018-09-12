@@ -1992,6 +1992,7 @@ function () {
     this.subscribed = null;
     this.disableFirebase = false;
     this.loading = false;
+    this.rollspeed = 30;
     this.periodMap = {
       "01w": 7 * 86400 * 1000,
       "03d": 3 * 86400 * 1000,
@@ -2274,6 +2275,27 @@ function () {
           }
         }
 
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()(Kline.instance.element).attr('tabindex', 1).keydown(function (event) {
+          var rollspeed = Kline.instance.rollspeed;
+
+          if (event.keyCode == 39) {
+            var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
+            mgr.onMouseDown('frame0', 0, 0);
+            mgr.onMouseMove("frame0", rollspeed, 0, true);
+            mgr.onMouseUp('frame0', rollspeed, 0);
+            mgr.redraw("All", false);
+          } else if (event.keyCode == 37) {
+            var _mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
+
+            _mgr.onMouseDown('frame0', rollspeed, 0);
+
+            _mgr.onMouseMove("frame0", 0, 0, true);
+
+            _mgr.onMouseUp('frame0', 0, 0);
+
+            _mgr.redraw("All", false);
+          }
+        });
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()('#chart_overlayCanvas').bind("contextmenu", function (e) {
           e.cancelBubble = true;
           e.returnValue = false;
@@ -2477,6 +2499,7 @@ function () {
           var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
 
           if (Kline.instance.buttonDown === true) {
+            console.log('x,y', x, y);
             mgr.onMouseMove("frame0", x, y, true);
             mgr.redraw("All", false);
           } else {

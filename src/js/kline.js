@@ -49,6 +49,7 @@ export default class Kline {
         this.subscribed = null;
         this.disableFirebase = false;
         this.loading = false;
+        this.rollspeed = 30;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -298,6 +299,22 @@ export default class Kline {
                     Control.onSize(this.width, this.height)
                 }
             }
+            $(Kline.instance.element).attr('tabindex', 1).keydown(function(event){
+                let rollspeed=Kline.instance.rollspeed;
+                if (event.keyCode==39) {
+                    let mgr = ChartManager.instance;
+                    mgr.onMouseDown('frame0',0, 0);
+                    mgr.onMouseMove("frame0", rollspeed, 0, true);
+                    mgr.onMouseUp('frame0',rollspeed, 0);
+                    mgr.redraw("All", false);
+                } else if (event.keyCode==37) {
+                    let mgr = ChartManager.instance;
+                    mgr.onMouseDown('frame0',rollspeed, 0);
+                    mgr.onMouseMove("frame0", 0, 0, true);
+                    mgr.onMouseUp('frame0',0, 0);
+                    mgr.redraw("All", false);
+                }
+            })
 
             $('#chart_overlayCanvas').bind("contextmenu", function (e) {
                 e.cancelBubble = true;
@@ -511,6 +528,7 @@ export default class Kline {
                     let y = e.clientY - r.top;
                     let mgr = ChartManager.instance;
                     if (Kline.instance.buttonDown === true) {
+                        console.log('x,y',x,y);
                         mgr.onMouseMove("frame0", x, y, true);
                         mgr.redraw("All", false);
                     } else {

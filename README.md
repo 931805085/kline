@@ -14,6 +14,7 @@
 * 把源码中可配置的部分抽出来
 * 添加了对 websocket(stomp over websocket) 连接方式的支持
 * 增加对外接口及事件回调(1.2版新增)
+* 增加对左右方向键的响应(1.2.1版新增)
 
 ### Features
 
@@ -25,6 +26,7 @@
     ✅ 支持深度图数据及最近成交数据展示
     ✅ 支持普通轮询和Websocket Over Stomp两种连接方式
     ✅ 支持动态更新数据，支持读取历史数据
+    ✅ 支持键盘事件
 
 ### ScreenShot!
 
@@ -158,6 +160,7 @@ $ npm install kline
 |`enableSockjs`   | 是否开启sockjs支持 true/false |  true
 |`reverseColor`   | 是否反色, 默认绿涨红跌 true/false | false
 |`stompClient`   | stomp 连接对象 | null
+|`rollspeed`    |按键滚动的速度（单位：像素）|30
 
 
 ### Methods
