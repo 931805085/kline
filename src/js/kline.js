@@ -50,6 +50,9 @@ export default class Kline {
         this.disableFirebase = false;
         this.loading = false;
         this.rollspeed = 30;
+        this.showToolbar = true;
+        this.showIndic = true;
+        this.rotate = 0;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -91,6 +94,7 @@ export default class Kline {
             Kline.instance = this;
             Kline.created = true;
         }
+
         return Kline.instance;
     }
 
@@ -132,6 +136,16 @@ export default class Kline {
         this.setLanguage(this.language);
 
         $(this.element).css({visibility: "visible"});
+
+        // 设置界面元素的显示
+        if (!this.showIndic)
+            this.switchIndic(false);
+        if (!this.showToolbar)
+            this.switchToolbar(this.showToolbar);
+        if (!this.isFullScreen)
+            this.sizeKline(this.isFullScreen);
+        if (this.rotate!==0)
+            this.switchRotate(this.rotate);
     }
 
     resize(width, height) {
@@ -236,7 +250,67 @@ export default class Kline {
         }
     }
     
+    switchToolbar(status) {
+        if (status) {
+            $('#chart_toolbar').removeClass('hide');
+        } else {
+            $('#chart_toolbar').addClass('hide');
+        }
+    }
 
+    sizeKline(isSized) {
+        if (isSized === undefined) {
+            Kline.instance.isSized = !Kline.instance.isSized;
+        } else {
+            Kline.instance.isSized = isSized;
+        }
+        
+        if (Kline.instance.isSized) {
+            $(Kline.instance.element).css({
+                position: 'fixed',
+                left: '0',
+                right: '0',
+                top: '0',
+                bottom: '0',
+                width: '100%',
+                height: '100%',
+                zIndex: '10000'
+            });
+
+            Control.onSize();
+            $('html,body').css({width: '100%', height: '100%', overflow: 'hidden'});
+        } else {
+            $(Kline.instance.element).attr('style', '');
+
+            $('html,body').attr('style', '');
+
+            Control.onSize(Kline.instance.width, Kline.instance.height);
+            $(Kline.instance.element).css({visibility: 'visible', height: Kline.instance.height + 'px'});
+        }
+    }
+
+    switchRotate(rotate) {
+        let element = $(this.element);
+        element.removeClass(['rotate90','rotate180','rotate270']);
+        switch(rotate%4) {
+            case 1:
+                this.rotate = 1;
+                element.addClass('rotate90');
+                break;
+            case 2:
+                this.rotate = 2;
+                element.addClass('rotate180');
+                break;
+            case 3:
+                this.rotate = 3;
+                element.addClass('rotate270');
+                break;
+            default:
+                this.rotate = 0;
+                break;
+        }
+    }
+    
     /*********************************************
      * Events
      *********************************************/
@@ -278,7 +352,6 @@ export default class Kline {
         let f = Kline.instance.chartMgr.getDataSource("frame0.k0").getFirstDate();
 
         if (f === -1) {
-            console.log('plan one');
             let requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, null);
             Control.requestData(true,requestParam);
         } else {
@@ -286,6 +359,10 @@ export default class Kline {
             Control.requestData(true,requestParam);
         }
         ChartManager.instance.redraw('All', false);
+    }
+
+    onRotateKline() {
+        
     }
 
     registerMouseEvent() {
@@ -623,29 +700,7 @@ export default class Kline {
 
 
             $('body').on('click', '#sizeIcon', function () {
-                Kline.instance.isSized = !Kline.instance.isSized;
-                if (Kline.instance.isSized) {
-                    $(Kline.instance.element).css({
-                        position: 'fixed',
-                        left: '0',
-                        right: '0',
-                        top: '0',
-                        bottom: '0',
-                        width: '100%',
-                        height: '100%',
-                        zIndex: '10000'
-                    });
-
-                    Control.onSize();
-                    $('html,body').css({width: '100%', height: '100%', overflow: 'hidden'});
-                } else {
-                    $(Kline.instance.element).attr('style', '');
-
-                    $('html,body').attr('style', '');
-
-                    Control.onSize(Kline.instance.width, Kline.instance.height);
-                    $(Kline.instance.element).css({visibility: 'visible', height: Kline.instance.height + 'px'});
-                }
+                Kline.instance.sizeKline();
             });
 
         })

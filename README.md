@@ -13,8 +13,8 @@
 * 删除了一些不必要的逻辑
 * 把源码中可配置的部分抽出来
 * 添加了对 websocket(stomp over websocket) 连接方式的支持
-* 增加对外接口及事件回调(1.2版新增)
-* 增加对左右方向键的响应(1.2.1版新增)
+* 增加对外接口及事件回调(2.0版新增)
+* 增加对左右方向键的响应(2.0版新增)
 
 ### Features
 
@@ -116,7 +116,7 @@ $ npm install kline
         symbol: "BTC",
         symbolName: "比特币",
         type: "poll", // poll/stomp
-        url: "http://127.0.0.1:8080/mock.json"
+        url: "./mock.json"
     });
     kline.draw();
 ```
@@ -161,6 +161,12 @@ $ npm install kline
 |`reverseColor`   | 是否反色, 默认绿涨红跌 true/false | false
 |`stompClient`   | stomp 连接对象 | null
 |`rollspeed`    |按键滚动的速度（单位：像素）|30
+|`showToolbar`  |是否显示工具栏|true
+|`showIndic`    |是否显示监视器|true
+|`isFullScreen`    |是否显示为全屏|true
+|`rotate`       |旋转90度的次数|0
+
+
 
 
 ### Methods
@@ -265,9 +271,37 @@ kline.resend();
 
     开启或关闭监视器,本操作必须放在draw()之后
 
-```javascript
+```
 kline.switchIndic(true);
 kline.switchIndic(false);
+```javascript
+
+* switchToolbar :function(status)
+
+    开启或关闭工具栏,本操作必须放在draw()之后
+
+```
+kline.switchToolbar(true);
+kline.switchToolbar(false);
+```javascript
+
+* sizeKline :function(isFullScreen)
+
+    是否显示为全屏
+
+```
+kline.sizeKline(true);
+kline.sizeKline(false);
+```javascript
+
+* switchRotate :function(rotate)
+
+    设置翻转的角度，rotate是取值0~3,取值每增加1，就多翻转90度。
+
+```
+kline.switchRotate(0);
+kline.switchRotate(3);
+```javascript
 
 
 

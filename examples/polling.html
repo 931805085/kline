@@ -59,7 +59,7 @@
     var kline = new Kline({
         element: "#kline_container",
         width: 1200,
-        height: 650,
+        height: 600,
         theme: 'dark', // light/dark
         language: 'zh-cn', // zh-cn/en-us/zh-tw
         ranges: ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"],
@@ -70,7 +70,9 @@
         limit: 50,
         intervalTime: 1000,
         debug: true,
-        showTrade: true,
+        showTrade: false,
+        isFullScreen:false,
+        rotate:0,
         onResize: function(width, height) {
             console.log("chart resized: " + width + " " + height);
         }
@@ -78,6 +80,7 @@
 
     kline.draw();
     kline.switchIndic(false);
+    //kline.switchRotate(1);
 
     $('#resize-btn').click(function () {
         var height = $('#height').val();
