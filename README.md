@@ -13,17 +13,18 @@
 * 删除了一些不必要的逻辑
 * 把源码中可配置的部分抽出来
 * 添加了对 websocket(stomp over websocket) 连接方式的支持
-* 增加对外接口及事件回调
+* 增加对外接口及事件回调(1.2版新增)
 
 ### Features
 
-    ✅ 支持两种主题配色切换 
-    ✅ 支持简体中文,英文,繁体中文三种语言 
+    ✅ 支持两种主题配色切换
+    ✅ 支持简体中文,英文,繁体中文三种语言
     ✅ 可配置的时间聚合方式
     ✅ 支持多种画线工具
     ✅ 支持多种画图算法
     ✅ 支持深度图数据及最近成交数据展示
     ✅ 支持普通轮询和Websocket Over Stomp两种连接方式
+    ✅ 支持动态更新数据，支持读取历史数据
 
 ### ScreenShot!
 
@@ -43,7 +44,7 @@
 安装
 
 ```bash
-$ npm install kline 
+$ npm install kline
 ```
 
 * 使用标签引入, 在HTML页面头部加入
@@ -128,7 +129,7 @@ $ npm install kline
         type: "stomp", // poll/stomp
         url: 'http://127.0.0.1:8088/socket',
         subscribePath: "/kline/subscribe",
-        sendPath: "/kline/send"       
+        sendPath: "/kline/send"
     });
     kline.draw();
 ```
@@ -144,14 +145,14 @@ $ npm install kline
 |`theme`   | 主题 dark(暗色)/light(亮色) | dark
 |`language` | 语言 zh-cn(简体中文)/en-us(英文)/zh-tw(繁体中文) | zh-cn
 |`ranges` | 聚合选项 1w/1d/12h/6h/4h/2h/1h/30m/15m/5m/3m/1m/line (w:周, d:天, h:小时, m:分钟, line:分时数据) | ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"]
-|`symbol` | 交易代号 | 
-|`symbolName`  | 交易名称 | 
+|`symbol` | 交易代号 |
+|`symbolName`  | 交易名称 |
 |`type`  | 连接类型 stomp/poll(轮询) |  poll
-|`url`  | 请求地址 | 
+|`url`  | 请求地址 |
 |`limit`  | 分页大小 | 1000
 |`intervalTime`  | 请求间隔时间(ms) | 3000
-|`subscribePath`   | 订阅地址 (仅stomp方式需要) | 
-|`sendPath`   | 发送地址 (仅stomp方式需要) | 
+|`subscribePath`   | 订阅地址 (仅stomp方式需要) |
+|`sendPath`   | 发送地址 (仅stomp方式需要) |
 |`debug`   | 是否开启调试模式 true/false |  true
 |`showTrade`   | 是否显示行情侧边栏 true/false |  true
 |`enableSockjs`   | 是否开启sockjs支持 true/false |  true
@@ -201,7 +202,7 @@ kline.setTheme('dark');  // dark/light
 kline.setLanguage('en-us');  // en-us/zh-ch/zh-tw
 ```
 
-* setShowTrade: function (isShow) 
+* setShowTrade: function (isShow)
 
     设置展示是否展示交易模块
 
@@ -209,53 +210,63 @@ kline.setLanguage('en-us');  // en-us/zh-ch/zh-tw
 kline.setShowTrade(false);  // true/false
 ```
 
-* toggleTrade: function () 
+* toggleTrade: function ()
 
     切换展示是否展示交易模块
 
 ```javascript
-kline.toggleTrade(); 
+kline.toggleTrade();
 ```
 
-* setIntervalTime: function (intervalTime) 
+* setIntervalTime: function (intervalTime)
 
     设置请求间隔时间(ms)
 
 ```javascript
-kline.setIntervalTime(5000); 
+kline.setIntervalTime(5000);
 ```
 
-* connect: function () 
+* connect: function ()
 
     建立socket连接
 
 ```javascript
-kline.connect(); 
+kline.connect();
 ```
 
-* disconnect: function () 
+* disconnect: function ()
 
     断开socket连接
 
 ```javascript
-kline.disconnect(); 
+kline.disconnect();
 ```
 
-* pause: function () 
+* pause: function ()
 
     暂停请求数据
 
 ```javascript
-kline.pause(); 
+kline.pause();
 ```
 
-* resend: function () 
+* resend: function ()
 
     重新请求数据
 
 ```javascript
-kline.resend(); 
+kline.resend();
 ```
+
+* switchIndic :function(status)
+
+    开启或关闭监视器,本操作必须放在draw()之后
+
+```javascript
+kline.switchIndic(true);
+kline.switchIndic(false);
+
+
 
 ### Events
 
@@ -282,7 +293,15 @@ kline.resend();
         }
     });
 ```
+### Request
 
+* 表单的字段如下：
+*   `symbol`          标识符，用于指定币种或股票
+*   `range`           刷新的周期
+*   `since`           请求数据的起始时间（13位时间戳）（本字段与before互斥，取决于type）
+*   `before`          请求数据的最末时间（13位时间戳）（本字段与since互斥，取决于type）
+*   `type`            决定请求的类型，可选值为：history,realtime(区分大小写)
+*   `prevTradeTime`   最后一次交易的时间（13位时间戳）
 
 ### Response
 

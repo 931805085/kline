@@ -225,6 +225,16 @@ export default class Kline {
         }
     }
 
+    switchIndic(status) {
+        if (status) {
+            Control.switchIndic('on');
+            $('#chart_show_indicator').addClass('selected');
+        } else {
+            Control.switchIndic('off');
+            $('#chart_show_indicator').removeClass('selected');
+        }
+    }
+    
 
     /*********************************************
      * Events

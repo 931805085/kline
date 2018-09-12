@@ -1,2 +1,4 @@
 .png
 .idea
+.git*
+node_modules

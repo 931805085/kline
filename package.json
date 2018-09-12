@@ -1,6 +1,6 @@
 {
   "name": "kline",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "本项目基于某K线插件做了一些封装和二次开发,使插件更加易用,方便后来的开发者.",
   "main": "dist/kline.js",
   "directories": {
@@ -12,17 +12,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chxj1992/kline.git"
+    "url": "git+https://github.com/931805085/kline.git"
   },
   "keywords": [
     "kline"
   ],
-  "author": "chxj1992",
+  "author": "ZCH",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/chxj1992/kline/issues"
+    "url": "https://github.com/931805085/kline/issues"
   },
-  "homepage": "https://github.com/chxj1992/kline#readme",
+  "homepage": "https://github.com/931805085/kline#readme",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.36",
     "@babel/preset-env": "^7.0.0-beta.36",

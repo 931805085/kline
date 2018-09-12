@@ -2189,6 +2189,17 @@ function () {
         console.log('DEBUG: socket disconnected');
       }
     }
+  }, {
+    key: "switchIndic",
+    value: function switchIndic(status) {
+      if (status) {
+        __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].switchIndic('on');
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()('#chart_show_indicator').addClass('selected');
+      } else {
+        __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].switchIndic('off');
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()('#chart_show_indicator').removeClass('selected');
+      }
+    }
     /*********************************************
      * Events
      *********************************************/
