@@ -970,6 +970,7 @@ function () {
   }, {
     key: "onMouseMove",
     value: function onMouseMove(frameName, x, y, drag) {
+      if (Kline.instance.loading) return;
       var frame = this.getFrame(frameName);
       if (frame === undefined) return;
       this.setFrameMousePos(frameName, x, y);
@@ -1706,6 +1707,17 @@ function (_DataSource) {
       return this.getDataAt(count - 1).date;
     }
   }, {
+    key: "getFirstDate",
+    value: function getFirstDate() {
+      var count = this.getDataCount();
+
+      if (count < 1) {
+        return -1;
+      }
+
+      return this.getDataAt(0).date;
+    }
+  }, {
     key: "getDataAt",
     value: function getDataAt(index) {
       return this._dataItems[index];
@@ -1726,43 +1738,19 @@ function (_DataSource) {
 
         var _e,
             _i,
+            _n,
             _cnt = data.length;
 
         var prependItem = [];
         var firstDate = firstItem.date;
 
-        if (firstDate > data[0][0]) {
-          if (firstDate > data[_cnt - 1][0]) {
+        if (firstDate >= data[0][0]) {
+          if (firstDate <= data[_cnt - 1][0]) {
             for (_i = 0; _i < _cnt; _i++) {
               _e = data[_i];
 
-              for (n = 1; n <= 4; n++) {
-                d = this.calcDecimalDigits(_e[n]);
-                if (this._decimalDigits < d) this._decimalDigits = d;
-              }
-
-              prependItem.push({
-                date: _e[0],
-                open: _e[1],
-                high: _e[2],
-                low: _e[3],
-                close: _e[4],
-                volume: _e[5]
-              });
-            }
-
-            this.setUpdateMode(DataSource.UpdateMode.Prepend);
-            this._prependedCount += prependItem.length;
-
-            this._dataItems.unshift(prependItem);
-
-            return true;
-          } else if (firstDate <= data[_cnt - 1][0]) {
-            for (_i = 0; _i < _cnt; _i++) {
-              _e = data[_i];
-
-              for (n = 1; n <= 4; n++) {
-                d = this.calcDecimalDigits(_e[n]);
+              for (_n = 1; _n <= 4; _n++) {
+                d = this.calcDecimalDigits(_e[_n]);
                 if (this._decimalDigits < d) this._decimalDigits = d;
               }
 
@@ -1776,14 +1764,19 @@ function (_DataSource) {
                   volume: _e[5]
                 });
               } else {
-                this.setUpdateMode(DataSource.UpdateMode.Prepend);
-                this._prependedCount += prependItem.length;
-
-                this._dataItems.unshift(prependItem);
-
-                return true;
+                break;
               }
             }
+
+            this.setUpdateMode(DataSource.UpdateMode.Prepend);
+            _cnt = prependItem.length;
+            this._prependedCount += _cnt;
+
+            for (_i = 0; _i < _cnt; _i++) {
+              this._dataItems.unshift(prependItem.pop());
+            }
+
+            return true;
           }
         }
 
@@ -1796,8 +1789,8 @@ function (_DataSource) {
             } else {
               this.setUpdateMode(DataSource.UpdateMode.Update);
 
-              for (n = 1; n <= 4; n++) {
-                d = this.calcDecimalDigits(_e[n]);
+              for (_n = 1; _n <= 4; _n++) {
+                d = this.calcDecimalDigits(_e[_n]);
                 if (this._decimalDigits < d) this._decimalDigits = d;
               }
 
@@ -1817,11 +1810,11 @@ function (_DataSource) {
             if (_i < _cnt) {
               this.setUpdateMode(DataSource.UpdateMode.Append);
 
-              for (; _i < _cnt; _i++, this._appendedCount++) {
+              for (; _i < _cnt; _i++) {
                 _e = data[_i];
 
-                for (n = 1; n <= 4; n++) {
-                  d = this.calcDecimalDigits(_e[n]);
+                for (_n = 1; _n <= 4; _n++) {
+                  d = this.calcDecimalDigits(_e[_n]);
                   if (this._decimalDigits < d) this._decimalDigits = d;
                 }
 
@@ -1998,6 +1991,7 @@ function () {
     this.paused = false;
     this.subscribed = null;
     this.disableFirebase = false;
+    this.loading = false;
     this.periodMap = {
       "01w": 7 * 86400 * 1000,
       "03d": 3 * 86400 * 1000,
@@ -2235,6 +2229,27 @@ function () {
       }
     }
   }, {
+    key: "onLoadHistory",
+    value: function onLoadHistory() {
+      if (Kline.instance.debug) {
+        console.log("DEBUG: Load History Data ");
+      }
+
+      var f = Kline.instance.chartMgr.getDataSource("frame0.k0").getFirstDate();
+
+      if (f === -1) {
+        console.log('plan one');
+        var requestParam = __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, null);
+        __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].requestData(true, requestParam);
+      } else {
+        var _requestParam = __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, f.toString(), 'history');
+
+        __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].requestData(true, _requestParam);
+      }
+
+      __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance.redraw('All', false);
+    }
+  }, {
     key: "registerMouseEvent",
     value: function registerMouseEvent() {
       __WEBPACK_IMPORTED_MODULE_8_jquery___default()(document).ready(function () {
@@ -2255,6 +2270,7 @@ function () {
           e.stopPropagation();
           return false;
         });
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()("#chart_overlayCanvas").bind('_LoadHistory', Kline.instance.onLoadHistory);
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()(".chart_container .chart_dropdown .chart_dropdown_t").mouseover(function () {
           var container = __WEBPACK_IMPORTED_MODULE_8_jquery___default()(".chart_container");
           var title = __WEBPACK_IMPORTED_MODULE_8_jquery___default()(this);
@@ -3750,7 +3766,7 @@ function () {
     }
   }, {
     key: "requestData",
-    value: function requestData(showLoading) {
+    value: function requestData(showLoading, requestParam) {
       Control.AbortRequest();
       window.clearTimeout(__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.timer);
 
@@ -3763,9 +3779,9 @@ function () {
       }
 
       if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.type === "stomp" && __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.stompClient) {
-        Control.requestOverStomp();
+        Control.requestOverStomp(requestParam);
       } else {
-        Control.requestOverHttp();
+        Control.requestOverHttp(requestParam);
       }
     }
   }, {
@@ -3775,7 +3791,7 @@ function () {
     }
   }, {
     key: "requestOverStomp",
-    value: function requestOverStomp() {
+    value: function requestOverStomp(requestParam) {
       if (!__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.socketConnected) {
         if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.debug) {
           console.log("DEBUG: socket is not coonnected");
@@ -3785,7 +3801,11 @@ function () {
       }
 
       if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.stompClient && __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.stompClient.ws.readyState === 1) {
-        __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.stompClient.send(__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.requestParam)));
+        if (requestParam === undefined) {
+          requestParam = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.requestParam;
+        }
+
+        __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.stompClient.send(__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(requestParam)));
         return;
       }
 
@@ -3799,44 +3819,50 @@ function () {
     }
   }, {
     key: "requestOverHttp",
-    value: function requestOverHttp() {
+    value: function requestOverHttp(requestParam) {
       if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.debug) {
         console.log("DEBUG: " + __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.requestParam);
       }
 
-      __WEBPACK_IMPORTED_MODULE_6_jquery___default()(document).ready(__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST = __WEBPACK_IMPORTED_MODULE_6_jquery___default.a.ajax({
-        type: "GET",
-        url: __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.url,
-        dataType: 'json',
-        data: __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.requestParam,
-        timeout: 30000,
-        created: Date.now(),
-        beforeSend: function beforeSend() {
-          this.range = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.range;
-          this.symbol = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.symbol;
-        },
-        success: function success(res) {
-          if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST) {
-            Control.requestSuccessHandler(res);
-          }
-        },
-        error: function error(xhr, textStatus, errorThrown) {
-          if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.debug) {
-            console.log(xhr);
-          }
-
-          if (xhr.status === 200 && xhr.readyState === 4) {
-            return;
-          }
-
-          __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.timer = setTimeout(function () {
-            Control.requestData(true);
-          }, __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.intervalTime);
-        },
-        complete: function complete() {
-          __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST = null;
+      __WEBPACK_IMPORTED_MODULE_6_jquery___default()(document).ready(function () {
+        if (requestParam === undefined) {
+          requestParam = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.requestParam;
         }
-      }));
+
+        __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST = __WEBPACK_IMPORTED_MODULE_6_jquery___default.a.ajax({
+          type: "GET",
+          url: __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.url,
+          dataType: 'json',
+          data: requestParam,
+          timeout: 30000,
+          created: Date.now(),
+          beforeSend: function beforeSend() {
+            this.range = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.range;
+            this.symbol = __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.symbol;
+          },
+          success: function success(res) {
+            if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST) {
+              Control.requestSuccessHandler(res);
+            }
+          },
+          error: function error(xhr, textStatus, errorThrown) {
+            if (__WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.debug) {
+              console.log(xhr);
+            }
+
+            if (xhr.status === 200 && xhr.readyState === 4) {
+              return;
+            }
+
+            __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.timer = setTimeout(function () {
+              Control.requestData(true);
+            }, __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.intervalTime);
+          },
+          complete: function complete() {
+            __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.G_HTTP_REQUEST = null;
+          }
+        });
+      });
     }
   }, {
     key: "requestSuccessHandler",
@@ -3855,6 +3881,7 @@ function () {
         return;
       }
 
+      __WEBPACK_IMPORTED_MODULE_0__kline__["a" /* default */].instance.loading = false;
       __WEBPACK_IMPORTED_MODULE_6_jquery___default()("#chart_loading").removeClass("activated");
       var chart = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance.getChart();
       chart.setTitle();
@@ -3963,9 +3990,29 @@ function () {
     }
   }, {
     key: "setHttpRequestParam",
-    value: function setHttpRequestParam(symbol, range, limit, since) {
+    value: function setHttpRequestParam(symbol, range, limit, since, type) {
       var str = "symbol=" + symbol + "&range=" + range;
-      if (limit !== null) str += "&limit=" + limit;else str += "&since=" + since;
+
+      if (type === undefined) {
+        type = 'realtime';
+      }
+
+      switch (type) {
+        case 'realtime':
+          if (limit !== null) str += "&limit=" + limit;else str += "&since=" + since;
+          break;
+
+        case 'history':
+          str += "&limit=" + limit;
+          str += "&before=" + since;
+          break;
+
+        default:
+          console.log('type参数指定错误');
+          break;
+      }
+
+      str += "&type=" + type;
 
       if (__WEBPACK_IMPORTED_MODULE_1__kline_trade__["a" /* KlineTrade */].instance.tradeDate.getTime() !== 0) {
         str += "&prevTradeTime=" + __WEBPACK_IMPORTED_MODULE_1__kline_trade__["a" /* KlineTrade */].instance.tradeDate.getTime();
@@ -9471,13 +9518,12 @@ function (_DataProvider2) {
 
         case __WEBPACK_IMPORTED_MODULE_3__data_sources__["a" /* DataSource */].UpdateMode.Prepend:
           {
-            var _i2;
+            var _i2,
+                sum = ds.getDataCount();
 
-            var _cnt2 = ds.getPrependCount();
+            indic.reserve(sum);
 
-            indic.reserve(_cnt2);
-
-            for (_i2 = 0; _i2 < _cnt2; _i2++) {
+            for (_i2 = 0; _i2 < sum; _i2++) {
               indic.execute(ds, _i2);
             }
 
@@ -9832,7 +9878,12 @@ function (_ChartArea) {
       if (this._dragStarted) {
         mgr.hideCursor();
         if (mgr.onToolMouseDrag(this.getFrameName(), x, y)) return this;
-        mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX);
+
+        if (mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX) == 0) {
+          Kline.instance.loading = true;
+          $("#chart_overlayCanvas").trigger('_LoadHistory');
+        }
+
         return this;
       }
 
@@ -9925,7 +9976,12 @@ function (_ChartArea2) {
 
       if (this._dragStarted) {
         mgr.hideCursor();
-        mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX);
+
+        if (mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX) == 0) {
+          Kline.instance.loading = true;
+          $("#chart_overlayCanvas").trigger('_LoadHistory');
+        }
+
         return this;
       }
 
@@ -15840,6 +15896,7 @@ function (_NamedObject) {
       this._firstIndex = this.validateFirstIndex(this._savedFirstIndex - this.calcColumnCount(x), this._maxItemCount);
       this._updated = true;
       if (this._selectedIndex >= 0) this.validateSelectedIndex();
+      return this._firstIndex;
     }
   }, {
     key: "startMove",

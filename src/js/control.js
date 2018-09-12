@@ -54,7 +54,7 @@ export class Control {
         Control.refreshHandler = setInterval(Control.refreshFunction, Kline.instance.intervalTime);
     }
 
-    static requestData(showLoading) {
+    static requestData(showLoading,requestParam) {
         Control.AbortRequest();
         window.clearTimeout(Kline.instance.timer);
         if (Kline.instance.paused) {
@@ -64,9 +64,9 @@ export class Control {
             $("#chart_loading").addClass("activated");
         }
         if (Kline.instance.type === "stomp" && Kline.instance.stompClient) {
-            Control.requestOverStomp();
+            Control.requestOverStomp(requestParam);
         } else {
-            Control.requestOverHttp();
+            Control.requestOverHttp(requestParam);
         }
     }
 
@@ -74,7 +74,7 @@ export class Control {
         return JSON.parse('{"' + decodeURI(str.replace(/&/g, "\",\"").replace(/=/g, "\":\"")) + '"}')
     }
 
-    static requestOverStomp() {
+    static requestOverStomp(requestParam) {
         if (!Kline.instance.socketConnected) {
             if (Kline.instance.debug) {
                 console.log("DEBUG: socket is not coonnected")
@@ -82,7 +82,10 @@ export class Control {
             return;
         }
         if (Kline.instance.stompClient && Kline.instance.stompClient.ws.readyState === 1) {
-            Kline.instance.stompClient.send(Kline.instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(Kline.instance.requestParam)));
+            if (requestParam===undefined) {
+                requestParam = Kline.instance.requestParam;
+            }
+            Kline.instance.stompClient.send(Kline.instance.sendPath, {}, JSON.stringify(Control.parseRequestParam(requestParam)));
             return;
         }
         if (Kline.instance.debug) {
@@ -93,42 +96,47 @@ export class Control {
         }, 1000);
     }
 
-    static requestOverHttp() {
+    static requestOverHttp(requestParam) {
         if (Kline.instance.debug) {
             console.log("DEBUG: " + Kline.instance.requestParam);
         }
         $(document).ready(
-            Kline.instance.G_HTTP_REQUEST = $.ajax({
-                type: "GET",
-                url: Kline.instance.url,
-                dataType: 'json',
-                data: Kline.instance.requestParam,
-                timeout: 30000,
-                created: Date.now(),
-                beforeSend: function () {
-                    this.range = Kline.instance.range;
-                    this.symbol = Kline.instance.symbol;
-                },
-                success: function (res) {
-                    if (Kline.instance.G_HTTP_REQUEST) {
-                        Control.requestSuccessHandler(res);
-                    }
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    if (Kline.instance.debug) {
-                        console.log(xhr);
-                    }
-                    if (xhr.status === 200 && xhr.readyState === 4) {
-                        return;
-                    }
-                    Kline.instance.timer = setTimeout(function () {
-                        Control.requestData(true);
-                    }, Kline.instance.intervalTime);
-                },
-                complete: function () {
-                    Kline.instance.G_HTTP_REQUEST = null;
+            () => {
+                if (requestParam===undefined) {
+                    requestParam = Kline.instance.requestParam;
                 }
-            })
+                Kline.instance.G_HTTP_REQUEST = $.ajax({
+                    type: "GET",
+                    url: Kline.instance.url,
+                    dataType: 'json',
+                    data: requestParam,
+                    timeout: 30000,
+                    created: Date.now(),
+                    beforeSend: function () {
+                        this.range = Kline.instance.range;
+                        this.symbol = Kline.instance.symbol;
+                    },
+                    success: function (res) {
+                        if (Kline.instance.G_HTTP_REQUEST) {
+                            Control.requestSuccessHandler(res);
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        if (Kline.instance.debug) {
+                            console.log(xhr);
+                        }
+                        if (xhr.status === 200 && xhr.readyState === 4) {
+                            return;
+                        }
+                        Kline.instance.timer = setTimeout(function () {
+                            Control.requestData(true);
+                        }, Kline.instance.intervalTime);
+                    },
+                    complete: function () {
+                        Kline.instance.G_HTTP_REQUEST = null;
+                    }
+                })
+            }
         );
     }
 
@@ -144,6 +152,7 @@ export class Control {
             }
             return;
         }
+        Kline.instance.loading = false;
         $("#chart_loading").removeClass("activated");
 
         let chart = ChartManager.instance.getChart();
@@ -242,12 +251,27 @@ export class Control {
     }
 
 
-    static setHttpRequestParam(symbol, range, limit, since) {
+    static setHttpRequestParam(symbol, range, limit, since, type) {
         let str = "symbol=" + symbol + "&range=" + range;
-        if (limit !== null)
-            str += "&limit=" + limit;
-        else
-            str += "&since=" + since;
+        if (type === undefined) {
+            type = 'realtime';
+        }
+        switch(type) {
+            case 'realtime':
+                if (limit !== null)
+                    str += "&limit=" + limit;
+                else
+                    str += "&since=" + since;
+                break;
+            case 'history':
+                str += "&limit=" + limit;
+                str += "&before=" + since;
+                break;
+            default:
+                console.log('type参数指定错误');
+                break;
+        }
+        str += "&type=" + type;
         if (KlineTrade.instance.tradeDate.getTime() !== 0) {
             str += "&prevTradeTime=" + KlineTrade.instance.tradeDate.getTime();
         }

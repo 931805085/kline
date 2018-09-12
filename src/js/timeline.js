@@ -239,6 +239,7 @@ export class Timeline extends NamedObject {
         this._updated = true;
         if (this._selectedIndex >= 0)
             this.validateSelectedIndex();
+        return this._firstIndex;
     }
 
     startMove() {

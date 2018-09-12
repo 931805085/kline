@@ -48,6 +48,7 @@ export default class Kline {
         this.paused = false;
         this.subscribed = null;
         this.disableFirebase = false;
+        this.loading = false;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -259,6 +260,23 @@ export default class Kline {
         }
     }
 
+    onLoadHistory() {
+        if (Kline.instance.debug) {
+            console.log("DEBUG: Load History Data ");
+        }
+        let f = Kline.instance.chartMgr.getDataSource("frame0.k0").getFirstDate();
+
+        if (f === -1) {
+            console.log('plan one');
+            let requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, null);
+            Control.requestData(true,requestParam);
+        } else {
+            let requestParam = Control.setHttpRequestParam(Kline.instance.symbol, Kline.instance.range, Kline.instance.limit, f.toString(),'history');
+            Control.requestData(true,requestParam);
+        }
+        ChartManager.instance.redraw('All', false);
+    }
+
     registerMouseEvent() {
         $(document).ready(function () {
             function __resize() {
@@ -278,6 +296,7 @@ export default class Kline {
                 e.stopPropagation();
                 return false;
             });
+            $("#chart_overlayCanvas").bind('_LoadHistory', Kline.instance.onLoadHistory);
             $(".chart_container .chart_dropdown .chart_dropdown_t")
                 .mouseover(function () {
                     let container = $(".chart_container");

@@ -95,6 +95,14 @@ export class MainDataSource extends DataSource {
         return this.getDataAt(count - 1).date;
     }
 
+    getFirstDate() {
+        let count = this.getDataCount();
+        if (count < 1) {
+            return -1;
+        }
+        return this.getDataAt(0).date;
+    }
+
     getDataAt(index) {
         return this._dataItems[index];
     }
@@ -109,32 +117,11 @@ export class MainDataSource extends DataSource {
             let lastIndex = len - 1;
             let firstItem = this._dataItems[0];
             let lastItem = this._dataItems[lastIndex];
-            let e, i, cnt = data.length;
+            let e, i, n, cnt = data.length;
             let prependItem = [];
             let firstDate = firstItem.date;
-            if (firstDate > data[0][0]) {
-                if (firstDate > data[cnt-1][0]) {
-                    for(i = 0; i < cnt; i++) {
-                        e = data[i];
-                        for (n = 1; n <= 4; n++) {
-                            d = this.calcDecimalDigits(e[n]);
-                            if (this._decimalDigits < d)
-                                this._decimalDigits = d;
-                        }
-                        prependItem.push({
-                            date: e[0],
-                            open: e[1],
-                            high: e[2],
-                            low: e[3],
-                            close: e[4],
-                            volume: e[5]
-                        });
-                    }
-                    this.setUpdateMode(DataSource.UpdateMode.Prepend);
-                    this._prependedCount += prependItem.length;
-                    this._dataItems.unshift(prependItem);
-                    return true;
-                } else if (firstDate <= data[cnt-1][0]) {
+            if (firstDate >= data[0][0]) {
+                if (firstDate <= data[cnt-1][0]) {
                     for(i = 0; i < cnt; i++) {
                         e = data[i];
                         for (n = 1; n <= 4; n++) {
@@ -152,18 +139,21 @@ export class MainDataSource extends DataSource {
                                 volume: e[5]
                             });
                         } else {
-                            this.setUpdateMode(DataSource.UpdateMode.Prepend);
-                            this._prependedCount += prependItem.length;
-                            this._dataItems.unshift(prependItem);
-                            return true;
+                            break;
                         }
                     }
+                    this.setUpdateMode(DataSource.UpdateMode.Prepend);
+                    cnt = prependItem.length;
+                    this._prependedCount += cnt;
+                    for (i = 0; i < cnt; i++) {
+                        this._dataItems.unshift(prependItem.pop());
+                    }
+                    return true;
                 }
             }
             
             for (i = 0; i < cnt; i++) {
                 e = data[i];
-
                 if (e[0] === lastItem.date) {
                     if (lastItem.open === e[1] &&
                         lastItem.high === e[2] &&
@@ -191,7 +181,7 @@ export class MainDataSource extends DataSource {
                     i++;
                     if (i < cnt) {
                         this.setUpdateMode(DataSource.UpdateMode.Append);
-                        for (; i < cnt; i++, this._appendedCount++) {
+                        for (; i < cnt; i++) {
                             e = data[i];
                             for (n = 1; n <= 4; n++) {
                                 d = this.calcDecimalDigits(e[n]);

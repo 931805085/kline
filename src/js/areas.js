@@ -227,7 +227,10 @@ export class MainArea extends ChartArea {
             mgr.hideCursor();
             if (mgr.onToolMouseDrag(this.getFrameName(), x, y))
                 return this;
-            mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX);
+            if (mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX) == 0) {
+                Kline.instance.loading = true;
+                $("#chart_overlayCanvas").trigger('_LoadHistory');
+            }
             return this;
         }
         if (this._passMoveEventToToolManager && mgr.onToolMouseMove(this.getFrameName(), x, y)) {
@@ -302,7 +305,10 @@ export class IndicatorArea extends ChartArea {
         }
         if (this._dragStarted) {
             mgr.hideCursor();
-            mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX);
+            if (mgr.getTimeline(this.getDataSourceName()).move(x - this._oldX) == 0) {
+                Kline.instance.loading = true;
+                $("#chart_overlayCanvas").trigger('_LoadHistory');
+            }
             return this;
         }
         switch (mgr._drawingTool) {

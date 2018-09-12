@@ -167,10 +167,9 @@ export class IndicatorDataProvider extends DataProvider {
                 break;
             }
             case data_sources.DataSource.UpdateMode.Prepend: {
-                let i
-                let cnt = ds.getPrependCount();
-                indic.reserve(cnt);
-                for (i = 0; i < cnt; i++) {
+                let i,sum = ds.getDataCount();
+                indic.reserve(sum);
+                for (i = 0; i < sum; i++) {
                     indic.execute(ds, i);
                 }
                 break;
