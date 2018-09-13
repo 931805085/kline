@@ -345,6 +345,12 @@ export default class Kline {
         }
     }
 
+    created() {
+        if (this.debug) {
+            console.log("DEBUG: Kline Created " + range);
+        }
+    }
+
     onLoadHistory() {
         if (Kline.instance.debug) {
             console.log("DEBUG: Load History Data ");
@@ -359,10 +365,6 @@ export default class Kline {
             Control.requestData(true,requestParam);
         }
         ChartManager.instance.redraw('All', false);
-    }
-
-    onRotateKline() {
-        
     }
 
     registerMouseEvent() {
@@ -426,6 +428,14 @@ export default class Kline {
                 .mouseout(function () {
                     $(this).next().removeClass("chart_dropdown-hover");
                     $(this).removeClass("chart_dropdown-hover");
+                })
+                .click(function() {
+                    let t = $(this);
+                    if (t.hasClass("chart_dropdown-hover")) {
+                        t.trigger('mouseout');
+                    } else {
+                        t.trigger('mouseover');
+                    }
                 });
             $(".chart_dropdown_data")
                 .mouseover(function () {
@@ -598,14 +608,68 @@ export default class Kline {
                 }
                 ChartManager.instance.redraw('OverlayCanvas', false);
             });
+            function getC(ev) {
+                let x1=ev.targetTouches[0].pageX;
+                let y1=ev.targetTouches[0].pageY;
+                let x2=ev.targetTouches[1].pageX;
+                let y2=ev.targetTouches[1].pageY;
+                let a=x1-x2;
+                let b=y1-y2;
+                return Math.sqrt(a*a+b*b)//已知两个直角边开平方得出 斜角边
+            }
             $("#chart_overlayCanvas")
+                .on("touchstart", function(e) {
+                    if (e.targetTouches.length==2) {
+                        e.preventDefault();
+                        Kline.instance.downC = getC(e);
+                    } else if (e.targetTouches.length==1) {
+                        e.preventDefault();
+                        Kline.instance.buttonDown = true;
+                        let r = e.target.getBoundingClientRect();
+                        let x = e.touches[0].clientX - r.left;;
+                        let y = e.touches[0].clientY - r.top;
+                        ChartManager.instance.onMouseDown("frame0", x, y);
+                        let mgr = ChartManager.instance;
+
+                        mgr.onMouseMove("frame0", x, y, false);
+                        mgr.redraw('OverlayCanvas', false);
+                    }
+                })
+                .on("touchmove", function(e) {
+                    if (e.targetTouches.length==2) {
+                        e.preventDefault();
+                        Control.mouseWheel(e,(getC(e)-Kline.instance.downC)/20000);
+                    } else if (e.targetTouches.length==1) {
+                        e.preventDefault();
+                        let r = e.target.getBoundingClientRect();
+                        let x = e.touches[0].clientX - r.left;
+                        let y = e.touches[0].clientY - r.top;
+                        let mgr = ChartManager.instance;
+                        if (Kline.instance.buttonDown === true) {
+                            mgr.onMouseMove("frame0", x, y, true);
+                            mgr.redraw("All", false);
+                        } else {
+                            mgr.onMouseMove("frame0", x, y, false);
+                            mgr.redraw("OverlayCanvas");
+                        }
+                    }
+                })
+                .on("touchend", function(e) {
+                    e.preventDefault();
+                    Kline.instance.buttonDown = false;
+                    let r = e.target.getBoundingClientRect();
+                    let x = e.changedTouches[0].clientX - r.left;;
+                    let y = e.changedTouches[0].clientY - r.top;
+                    let mgr = ChartManager.instance;
+                    mgr.onMouseUp("frame0", x, y);
+                    mgr.redraw("All");
+                })
                 .mousemove(function (e) {
                     let r = e.target.getBoundingClientRect();
                     let x = e.clientX - r.left;
                     let y = e.clientY - r.top;
                     let mgr = ChartManager.instance;
                     if (Kline.instance.buttonDown === true) {
-                        console.log('x,y',x,y);
                         mgr.onMouseMove("frame0", x, y, true);
                         mgr.redraw("All", false);
                     } else {
@@ -703,6 +767,8 @@ export default class Kline {
                 Kline.instance.sizeKline();
             });
 
+            //emit the created event.
+            Kline.instance.created();
         })
 
     }

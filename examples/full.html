@@ -1,0 +1,101 @@
+<html>
+<head>
+    <title>K线图</title>
+    <meta name="renderer" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../lib/jquery.js"></script>
+    <script src="../lib/jquery.mousewheel.js"></script>
+    <style type="text/css">
+        .kline {
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="kline">
+    <div id="kline_container"/>
+
+</div>
+
+<script src="../dist/kline.js"></script>
+
+<script type="text/javascript">
+    var kline = new Kline({
+        element: "#kline_container",
+        theme: 'dark', // light/dark
+        language: 'zh-cn', // zh-cn/en-us/zh-tw
+        ranges: ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"],
+        symbol: "BTC",
+        symbolName: "BTC/USD",
+        type: "poll",
+        url: "http://kline.zch-zcr.top/index.php/index/index/test2",
+        //url: "http://localhost:8081/index.php/index/index/test2",
+        limit: 50,
+        intervalTime: 1000,
+        debug: true,
+        showTrade: false,
+        isFullScreen:false,
+        rotate:0,
+        onResize: function(width, height) {
+            console.log("chart resized: " + width + " " + height);
+        },
+        created: function() {
+            console.log('created');
+        }
+    });
+
+    kline.draw();
+    //kline.switchIndic(false);
+    //kline.switchRotate(1);
+    var sizeKline = function(width,height) {
+        if (kline.rotate%2 == 0) {
+            kline.resize(width, height);
+        } else {
+            kline.resize(height, width);
+        }
+    }
+
+    $(document).ready(function () {
+        $(window).resize(function() {
+            let window2 = $(this);
+            sizeKline(window2.width(), window2.height());
+        }).trigger('resize');
+        // $(window).on('orientationchange',function() {
+        //     console.log('ss');
+        //     if ( window.orientation == 180 || window.orientation==0 ) {
+        //         alert("竖屏");
+        //     } else if( window.orientation == 90 || window.orientation == -90 ) {
+        //         alert("横屏");
+        //     }
+        // });
+        window.addEventListener('orientationchange', function(event){
+            console.log('ss');
+            if ( window.orientation == 180 || window.orientation==0 ) {
+                alert("竖屏");
+            }
+            if( window.orientation == 90 || window.orientation == -90 ) {
+                alert("横屏");
+            }
+        });
+        window.onload=function(){
+            if(document.documentElement.scrollHeight <= document.documentElement.clientHeight) {
+            bodyTag = document.getElementsByTagName('body')[0];
+            bodyTag.style.height = document.documentElement.clientWidth / screen.width * screen.height + 'px';
+            }
+            setTimeout(function() {
+                console.log('scrollTo');
+                window.scrollTo(0, 1)
+            }, 0);
+        }
+    })
+</script>
+
+</body>
+
+
+</html>

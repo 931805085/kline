@@ -2321,6 +2321,13 @@ function () {
       }
     }
   }, {
+    key: "created",
+    value: function created() {
+      if (this.debug) {
+        console.log("DEBUG: Kline Created " + range);
+      }
+    }
+  }, {
     key: "onLoadHistory",
     value: function onLoadHistory() {
       if (Kline.instance.debug) {
@@ -2340,9 +2347,6 @@ function () {
 
       __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance.redraw('All', false);
     }
-  }, {
-    key: "onRotateKline",
-    value: function onRotateKline() {}
   }, {
     key: "registerMouseEvent",
     value: function registerMouseEvent() {
@@ -2413,6 +2417,14 @@ function () {
         }).mouseout(function () {
           __WEBPACK_IMPORTED_MODULE_8_jquery___default()(this).next().removeClass("chart_dropdown-hover");
           __WEBPACK_IMPORTED_MODULE_8_jquery___default()(this).removeClass("chart_dropdown-hover");
+        }).click(function () {
+          var t = __WEBPACK_IMPORTED_MODULE_8_jquery___default()(this);
+
+          if (t.hasClass("chart_dropdown-hover")) {
+            t.trigger('mouseout');
+          } else {
+            t.trigger('mouseover');
+          }
         });
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()(".chart_dropdown_data").mouseover(function () {
           __WEBPACK_IMPORTED_MODULE_8_jquery___default()(this).addClass("chart_dropdown-hover");
@@ -2574,14 +2586,69 @@ function () {
 
           __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance.redraw('OverlayCanvas', false);
         });
-        __WEBPACK_IMPORTED_MODULE_8_jquery___default()("#chart_overlayCanvas").mousemove(function (e) {
+
+        function getC(ev) {
+          var x1 = ev.targetTouches[0].pageX;
+          var y1 = ev.targetTouches[0].pageY;
+          var x2 = ev.targetTouches[1].pageX;
+          var y2 = ev.targetTouches[1].pageY;
+          var a = x1 - x2;
+          var b = y1 - y2;
+          return Math.sqrt(a * a + b * b); //已知两个直角边开平方得出 斜角边
+        }
+
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()("#chart_overlayCanvas").on("touchstart", function (e) {
+          if (e.targetTouches.length == 2) {
+            e.preventDefault();
+            Kline.instance.downC = getC(e);
+          } else if (e.targetTouches.length == 1) {
+            e.preventDefault();
+            Kline.instance.buttonDown = true;
+            var r = e.target.getBoundingClientRect();
+            var x = e.touches[0].clientX - r.left;
+            ;
+            var y = e.touches[0].clientY - r.top;
+            __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance.onMouseDown("frame0", x, y);
+            var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
+            mgr.onMouseMove("frame0", x, y, false);
+            mgr.redraw('OverlayCanvas', false);
+          }
+        }).on("touchmove", function (e) {
+          if (e.targetTouches.length == 2) {
+            e.preventDefault();
+            __WEBPACK_IMPORTED_MODULE_0__control__["a" /* Control */].mouseWheel(e, (getC(e) - Kline.instance.downC) / 20000);
+          } else if (e.targetTouches.length == 1) {
+            e.preventDefault();
+            var r = e.target.getBoundingClientRect();
+            var x = e.touches[0].clientX - r.left;
+            var y = e.touches[0].clientY - r.top;
+            var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
+
+            if (Kline.instance.buttonDown === true) {
+              mgr.onMouseMove("frame0", x, y, true);
+              mgr.redraw("All", false);
+            } else {
+              mgr.onMouseMove("frame0", x, y, false);
+              mgr.redraw("OverlayCanvas");
+            }
+          }
+        }).on("touchend", function (e) {
+          e.preventDefault();
+          Kline.instance.buttonDown = false;
+          var r = e.target.getBoundingClientRect();
+          var x = e.changedTouches[0].clientX - r.left;
+          ;
+          var y = e.changedTouches[0].clientY - r.top;
+          var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
+          mgr.onMouseUp("frame0", x, y);
+          mgr.redraw("All");
+        }).mousemove(function (e) {
           var r = e.target.getBoundingClientRect();
           var x = e.clientX - r.left;
           var y = e.clientY - r.top;
           var mgr = __WEBPACK_IMPORTED_MODULE_2__chart_manager__["a" /* ChartManager */].instance;
 
           if (Kline.instance.buttonDown === true) {
-            console.log('x,y', x, y);
             mgr.onMouseMove("frame0", x, y, true);
             mgr.redraw("All", false);
           } else {
@@ -2678,7 +2745,9 @@ function () {
         });
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()('body').on('click', '#sizeIcon', function () {
           Kline.instance.sizeKline();
-        });
+        }); //emit the created event.
+
+        Kline.instance.created();
       });
     }
   }]);
