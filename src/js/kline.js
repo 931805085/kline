@@ -50,6 +50,7 @@ export default class Kline {
         this.disableFirebase = false;
         this.loading = false;
         this.rollspeed = 30;
+        this.isFullScreen = false;
         this.showToolbar = true;
         this.showIndic = true;
         this.rotate = 0;
@@ -257,14 +258,17 @@ export default class Kline {
             $('#chart_toolbar').addClass('hide');
         }
     }
-
+    static autoFull() {
+        Kline.instance.resize(document.body.clientWidth, document.body.clientHeight);
+    }
+    
     sizeKline(isSized) {
         if (isSized === undefined) {
             Kline.instance.isSized = !Kline.instance.isSized;
         } else {
             Kline.instance.isSized = isSized;
         }
-        
+
         if (Kline.instance.isSized) {
             $(Kline.instance.element).css({
                 position: 'fixed',
@@ -279,13 +283,13 @@ export default class Kline {
 
             Control.onSize();
             $('html,body').css({width: '100%', height: '100%', overflow: 'hidden'});
+            $(window).bind('resize', Kline.autoFull);
         } else {
             $(Kline.instance.element).attr('style', '');
-
             $('html,body').attr('style', '');
-
             Control.onSize(Kline.instance.width, Kline.instance.height);
             $(Kline.instance.element).css({visibility: 'visible', height: Kline.instance.height + 'px'});
+            $(window).unbind('resize', Kline.autoFull);
         }
     }
 

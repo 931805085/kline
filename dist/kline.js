@@ -1993,6 +1993,7 @@ function () {
     this.disableFirebase = false;
     this.loading = false;
     this.rollspeed = 30;
+    this.isFullScreen = false;
     this.showToolbar = true;
     this.showIndic = true;
     this.rotate = 0;
@@ -2244,6 +2245,7 @@ function () {
           height: '100%',
           overflow: 'hidden'
         });
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()(window).bind('resize', Kline.autoFull);
       } else {
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()(Kline.instance.element).attr('style', '');
         __WEBPACK_IMPORTED_MODULE_8_jquery___default()('html,body').attr('style', '');
@@ -2252,6 +2254,7 @@ function () {
           visibility: 'visible',
           height: Kline.instance.height + 'px'
         });
+        __WEBPACK_IMPORTED_MODULE_8_jquery___default()(window).unbind('resize', Kline.autoFull);
       }
     }
   }, {
@@ -2749,6 +2752,11 @@ function () {
 
         Kline.instance.created();
       });
+    }
+  }], [{
+    key: "autoFull",
+    value: function autoFull() {
+      Kline.instance.resize(document.body.clientWidth, document.body.clientHeight);
     }
   }]);
 
