@@ -74,7 +74,7 @@ body {
 }
 
 .chart_container .chart_dropdown {
-    display: inline-block;
+    /* display: inline-block; */
     float: left;
     position: relative;
     z-index: 100
@@ -255,7 +255,7 @@ body {
 
 .chart_container .chart_toolbar_label {
     cursor: default;
-    display: inline-block;
+    /* display: inline-block; */
     float: left;
     padding: 7px 4px
 }
@@ -363,7 +363,7 @@ body {
 }
 
 #chart_toolbar_periods_horz {
-    display: inline-block;
+    /* display: inline-block; */
     float: left;
     position: relative;
     z-index: 100

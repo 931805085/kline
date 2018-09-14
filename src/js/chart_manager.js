@@ -39,7 +39,7 @@ export class ChartManager {
     static created = false;
     static instance = null;
 
-    constructor() {
+    constructor(option) {
         this._dataSources = {};
         this._dataSourceCache = {};
         this._dataProviders = {};
@@ -65,6 +65,8 @@ export class ChartManager {
         this._overlayCanvas = null;
         this._mainContext = null;
         this._overlayContext = null;
+
+        Object.assign(this, option);
 
         if (!ChartManager.created) {
             ChartManager.instance = this;
@@ -754,15 +756,20 @@ export class ChartManager {
     }
 
     onMouseMove(frameName, x, y, drag) {
-        if (Kline.instance.loading)
+        if (Kline.instance.loading) {
+            this.onMouseLeave(frameName,x,y);
             return;
+        }
         let frame = this.getFrame(frameName);
-        if (frame === undefined)
+        if (frame === undefined) {
             return;
+        }
+       
         this.setFrameMousePos(frameName, x, y);
         this.hideCrossCursor();
         if (this._highlightedFrame !== frame)
             this.clearHighlight();
+        
         if (this._capturingMouseArea !== null && this._capturingMouseArea !== undefined) {
             this._capturingMouseArea.onMouseMove(x, y);
             return;

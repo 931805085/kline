@@ -16,6 +16,7 @@
 * 增加对外接口及事件回调(2.0版新增)
 * 增加对左右方向键的响应(2.0版新增)
 * 增加对移动端的支持(2.1版新增)
+* 支持由服务器端控制刷新间隔(2.1.3新增)
 
 ### Features
 
@@ -167,7 +168,8 @@ $ npm install kline
 |`showIndic`    |是否显示监视器|true
 |`isFullScreen`    |是否显示为全屏|true
 |`rotate`       |旋转90度的次数|0
-
+|`dealMouseWheelEvent` | 是否处理鼠标滚轮事件| true
+|`autoIntervalTime`    |是否自动从服务器端获取刷新间隔打开之后要求服务器端实现next数据的计算|false
 
 
 
@@ -183,7 +185,7 @@ kline.draw();
 
 * resize(int width, int height)
 
-    设置画布大小
+    设置画布大小（可设置为0来自动获取窗口的宽度或高度）
 
 ```javascript
 kline.resize(1200, 550);
@@ -305,6 +307,14 @@ kline.switchRotate(0);
 kline.switchRotate(3);
 ```javascript
 
+* adjustScale :function(newScale)
+
+    调整数据显示的缩放比例，正数为放大，负数为缩小
+
+```
+kline.adjustScale(-10);
+kline.adjustScale(10);
+```javascript
 
 
 ### Events
@@ -382,7 +392,8 @@ kline.switchRotate(3);
           0.013
         ]
       ]
-    }
+    },
+    "next": 3000
   }
 }
 ```
@@ -392,3 +403,4 @@ kline.switchRotate(3);
 * `lines`: K线图, 依次是: 时间(ms), 开盘价, 最高价, 最低价, 收盘价, 成交量
 * `depths`(可选, 行情侧边栏显示): 深度图数据,  `asks`:一定比例的卖单列表, `bids`:一定比例的买单列表, 其中每项的值依次是 成交价, 成交量
 * `trades`(可选, 行情侧边栏显示): 最近成交记录,  `amount`: 成交量, `price`:单价, `tid`:订单ID, `time`:成交时间(ms), `type`:成交类型 buy/sell
+* `next`(可选（开启autoIntervalTime时必须有），下一次发起请求之前的等待事件，单位：毫秒)

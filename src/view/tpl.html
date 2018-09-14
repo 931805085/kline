@@ -1,4 +1,4 @@
-<div class="trade_container dark hide">
+<div class="trade_container dark">
     <div class="m_cent">
         <div class="m_guadan">
             <div class="symbol-title">
@@ -143,6 +143,7 @@
                 </li>
             </ul>
         </div>
+        <div id="chart_show_trade" class="chart_toolbar_button chart_str_trade_cap">交易信息</div>
         <div id="chart_show_indicator" class="chart_toolbar_button chart_str_indicator_cap selected">技术指标</div>
         <div id="chart_show_tools" class="chart_toolbar_button chart_str_tools_cap">画线工具</div>
         <div id="chart_toolbar_theme">
@@ -216,6 +217,15 @@
                             </ul>
                         </td>
                     </tr>
+                    <tr id="chart_enable_trade" style="display: none;">
+                            <td class="chart_str_trade">交易信息</td>
+                            <td>
+                                <ul>
+                                    <li><a name="on" class="chart_str_on selected">开启</a></li>
+                                    <li><a name="off" class="chart_str_off">关闭</a></li>
+                                </ul>
+                            </td>
+                        </tr>
                     <tr>
                         <td></td>
                         <td>
@@ -603,6 +613,8 @@
     <span name="chart_str_main_indicator" zh_tw="主指標" zh_cn="主指标" en_us="Main Indicator"></span>
     <span name="chart_str_indicator" zh_tw="技術指標" zh_cn="技术指标" en_us="Indicator"></span>
     <span name="chart_str_indicator_cap" zh_tw="技術指標" zh_cn="技术指标" en_us="INDICATOR"></span>
+    <span name="chart_str_trade" zh_tw="交易信息" zh_cn="交易信息" en_us="TRADE"></span>
+    <span name="chart_str_trade_cap" zh_tw="交易信息" zh_cn="交易信息" en_us="TRADE"></span>
     <span name="chart_str_tools" zh_tw="畫線工具" zh_cn="画线工具" en_us="Tools"></span>
     <span name="chart_str_tools_cap" zh_tw="畫線工具" zh_cn="画线工具" en_us="TOOLS"></span>
     <span name="chart_str_theme" zh_tw="主題選擇" zh_cn="主题选择" en_us="Theme"></span>

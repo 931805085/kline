@@ -66,13 +66,13 @@
         symbol: "BTC",
         symbolName: "BTC/USD",
         type: "poll", // poll/socket
-        url: "http://localhost:8081/index.php/index/index/test2",
+        url: "./mock.json",
         limit: 50,
-        intervalTime: 1000,
+        intervalTime: 6000,
         debug: true,
         showTrade: false,
         isFullScreen:false,
-        rotate:1,
+        rotate:0,
         onResize: function(width, height) {
             console.log("chart resized: " + width + " " + height);
         }

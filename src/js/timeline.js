@@ -139,7 +139,7 @@ export class Timeline extends NamedObject {
         if (firstIndex < 0) {
             return 0;
         }
-        let lastFirst = Math.max(0, this._maxIndex - 1 /*maxItemCount*/);
+        let lastFirst = Math.max(0, maxItemCount ? maxItemCount - 1 : this._maxIndex - 1);
         if (firstIndex > lastFirst) {
             return lastFirst;
         }
@@ -227,6 +227,17 @@ export class Timeline extends NamedObject {
                     this._updated = true;
                 }
                 break;
+            case DataSource.UpdateMode.Prepend:
+                let prependCount = ds.getPrependCount();
+                this._firstIndex = prependCount;
+                
+                if (this._selectedIndex >= 0) {
+                    this._selectedIndex += prependCount;
+                    this.validateSelectedIndex();
+                }
+                this.updateMaxItemCount();
+                this._updated = true;
+                break;
         }
     }
 
@@ -234,8 +245,9 @@ export class Timeline extends NamedObject {
         if (this.isLatestShown()) {
             ChartManager.instance.getArea(this.getDataSourceName() + ".mainRange").setChanged(true);
         }
+        
         this._firstIndex = this.validateFirstIndex(
-            this._savedFirstIndex - this.calcColumnCount(x), this._maxItemCount);
+            this._savedFirstIndex - this.calcColumnCount(x));
         this._updated = true;
         if (this._selectedIndex >= 0)
             this.validateSelectedIndex();

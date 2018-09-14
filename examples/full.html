@@ -4,6 +4,7 @@
     <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=1;" name="viewport" />
     <script src="../lib/jquery.js"></script>
     <script src="../lib/jquery.mousewheel.js"></script>
     <style type="text/css">
@@ -18,6 +19,7 @@
 <body>
 
 <div class="kline">
+    <div id='waiting'>请稍等，插件正在加载中。。。</div>
     <div id="kline_container"/>
 
 </div>
@@ -30,69 +32,73 @@
         theme: 'dark', // light/dark
         language: 'zh-cn', // zh-cn/en-us/zh-tw
         ranges: ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"],
-        symbol: "BTC",
+        symbol: "btcusdt",
         symbolName: "BTC/USD",
         type: "poll",
-        url: "http://kline.zch-zcr.top/index.php/index/index/test2",
-        //url: "http://localhost:8081/index.php/index/index/test2",
-        limit: 50,
-        intervalTime: 1000,
+        //url: 'http://47.52.175.204:8082/getKlines',
+        //url: "http://kline.zch-zcr.top/index.php/index/index/test2",
+        url: "./mock.json",
+        limit: 100,
+        intervalTime: 60000,
         debug: true,
         showTrade: false,
-        isFullScreen:false,
+        isFullScreen: false,
         rotate:0,
         onResize: function(width, height) {
             console.log("chart resized: " + width + " " + height);
         },
         created: function() {
             console.log('created');
+            $('#waiting').addClass('hide');
         }
     });
 
     kline.draw();
+    kline.resize(0,0);
     //kline.switchIndic(false);
     //kline.switchRotate(1);
-    var sizeKline = function(width,height) {
-        if (kline.rotate%2 == 0) {
-            kline.resize(width, height);
-        } else {
-            kline.resize(height, width);
-        }
-    }
+    // var sizeKline = function(width,height) {
+    //     let scale = 1;
+    //     if (kline.rotate%2 == 0) {
+    //         kline.resize(width * scale, height * scale);
+    //     } else {
+    //         kline.resize(height * scale, width * scale);
+    //     }
+    // }
 
-    $(document).ready(function () {
-        $(window).resize(function() {
-            let window2 = $(this);
-            sizeKline(window2.width(), window2.height());
-        }).trigger('resize');
-        // $(window).on('orientationchange',function() {
-        //     console.log('ss');
-        //     if ( window.orientation == 180 || window.orientation==0 ) {
-        //         alert("竖屏");
-        //     } else if( window.orientation == 90 || window.orientation == -90 ) {
-        //         alert("横屏");
-        //     }
-        // });
-        window.addEventListener('orientationchange', function(event){
-            console.log('ss');
-            if ( window.orientation == 180 || window.orientation==0 ) {
-                alert("竖屏");
-            }
-            if( window.orientation == 90 || window.orientation == -90 ) {
-                alert("横屏");
-            }
-        });
-        window.onload=function(){
-            if(document.documentElement.scrollHeight <= document.documentElement.clientHeight) {
-            bodyTag = document.getElementsByTagName('body')[0];
-            bodyTag.style.height = document.documentElement.clientWidth / screen.width * screen.height + 'px';
-            }
-            setTimeout(function() {
-                console.log('scrollTo');
-                window.scrollTo(0, 1)
-            }, 0);
-        }
-    })
+    // $(document).ready(function () {
+    //     $(window).resize(function() {
+    //         console.log('new size',window2.width(), window.innerHeight);
+    //         sizeKline(window2.width(), document.body.clientHeight);
+    //     }).trigger('resize');
+    //     // $(window).on('orientationchange',function() {
+    //     //     console.log('ss');
+    //     //     if ( window.orientation == 180 || window.orientation==0 ) {
+    //     //         alert("竖屏");
+    //     //     } else if( window.orientation == 90 || window.orientation == -90 ) {
+    //     //         alert("横屏");
+    //     //     }
+    //     // });
+    //     // var evt = "onorientationchange" in window ? "orientationchange" : "resize";
+    //     // window.addEventListener(evt,rsize,false);
+    //     // function rsize() {
+    //     //     if(window.orientation == 0 || window.orientation == 180) {
+    //     //         alert("竖屏");
+    //     //     } else {
+    //     //         alert("横屏");
+    //     //     }
+    //     //}
+
+    //     // if(document.documentElement.scrollHeight <= document.documentElement.clientHeight) {
+    //     //     bodyTag = document.getElementsByTagName('body')[0];
+    //     //     bodyTag.style.height = document.documentElement.clientWidth / screen.width * screen.height + 'px';
+    //     // }
+    //     // setTimeout(function() {
+    //     //     console.log('scrollTo');
+    //     //     window.scrollTo(0, 100)
+    //     // }, 0);
+    // })
+
 </script>
 
 </body>

@@ -54,6 +54,8 @@ export default class Kline {
         this.showToolbar = true;
         this.showIndic = true;
         this.rotate = 0;
+        this.dealMouseWheelEvent = true;
+        this.autoIntervalTime = false;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -106,7 +108,9 @@ export default class Kline {
 
     draw() {
         Kline.trade = new KlineTrade();
-        Kline.chartMgr = new ChartManager();
+        Kline.chartMgr = new ChartManager({
+            _captureMouseWheelDirectly: this.dealMouseWheelEvent
+        });
 
         let view = $.parseHTML(tpl);
         for (let k in this.ranges) {
@@ -143,15 +147,17 @@ export default class Kline {
             this.switchIndic(false);
         if (!this.showToolbar)
             this.switchToolbar(this.showToolbar);
-        if (!this.isFullScreen)
+        if (!this.showTrade)
+            this.setShowTrade(this.showTrade);
+        if (this.isFullScreen)
             this.sizeKline(this.isFullScreen);
         if (this.rotate!==0)
             this.switchRotate(this.rotate);
     }
 
     resize(width, height) {
-        this.width = width;
-        this.height = height;
+        this.width = width || window.innerWidth;
+        this.height = height || window.innerHeight;
         Control.onSize(this.width, this.height);
     }
 
@@ -175,22 +181,15 @@ export default class Kline {
     setShowTrade(isShow) {
         this.showTrade = isShow;
         if (isShow) {
-            $(".trade_container").show();
+            Control.switchTrade('on');
         } else {
-            $(".trade_container").hide();
+            Control.switchTrade('off');
         }
-        Control.onSize(this.width, this.height);
     }
 
     toggleTrade() {
-        if (!this.showTrade) {
-            this.showTrade = true;
-            $(".trade_container").show();
-        } else {
-            this.showTrade = false;
-            $(".trade_container").hide();
-        }
-        Control.onSize(this.width, this.height);
+        let instance = Kline.instance;
+        instance.setShowTrade(!instance.showTrade);
     }
 
     setIntervalTime(intervalTime) {
@@ -258,6 +257,7 @@ export default class Kline {
             $('#chart_toolbar').addClass('hide');
         }
     }
+
     static autoFull() {
         Kline.instance.resize(document.body.clientWidth, document.body.clientHeight);
     }
@@ -312,6 +312,20 @@ export default class Kline {
             default:
                 this.rotate = 0;
                 break;
+        }
+    }
+
+    adjustScale(newScale) {
+        if (!this.chartMgr._highlightedFrame)
+            this.chartMgr.onMouseMove("frame0", 1, 1, false);
+        if (newScale>0) {
+            for (let i=newScale;i>0;i--){
+                Control.mouseWheel(null,1);
+            }
+        } else if (newScale<0) {
+            for (let i=-newScale;i>0;i--){
+                Control.mouseWheel(null,-1);
+            }
         }
     }
     
@@ -508,6 +522,11 @@ export default class Kline {
                         Control.switchIndic('on');
                     }
                 });
+            $('#chart_show_trade')
+                .click(function () {
+                    Kline.instance.toggleTrade();
+                });
+            
             $("#chart_tabbar li a")
                 .click(function () {
                     $("#chart_tabbar li a").removeClass('selected');
@@ -584,6 +603,14 @@ export default class Kline {
                     Control.switchIndic('on');
                 } else if ($(this).attr('name') === 'off') {
                     Control.switchIndic('off');
+                }
+            });
+            $('#chart_enable_trade li a').click(function () {
+                $('#chart_enable_trade a').removeClass('selected');
+                if ($(this).attr('name') === 'on') {
+                    Kline.instance.setShowTrade(true);
+                } else if ($(this).attr('name') === 'off') {
+                    Kline.instance.setShowTrade(false);
                 }
             });
             $('#chart_language_setting_div li a').click(function () {
