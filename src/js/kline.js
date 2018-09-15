@@ -56,6 +56,7 @@ export default class Kline {
         this.rotate = 0;
         this.dealMouseWheelEvent = true;
         this.autoIntervalTime = false;
+        this.defaultMainStyle = 0;
 
         this.periodMap = {
             "01w": 7 * 86400 * 1000,
@@ -153,6 +154,8 @@ export default class Kline {
             this.sizeKline(this.isFullScreen);
         if (this.rotate!==0)
             this.switchRotate(this.rotate);
+        if (this.defaultMainStyle!=0)
+            this.switchMainChartStyle(this.defaultMainStyle);
     }
 
     resize(width, height) {
@@ -327,6 +330,36 @@ export default class Kline {
                 Control.mouseWheel(null,-1);
             }
         }
+    }
+
+    switchMainChartStyle(newStyle) {
+        let mgr = ChartManager.instance;
+        switch(newStyle) {
+            case 'CandleStick':
+            case 0:
+                newStyle = 'CandleStick';
+                $("#chart_select_chart_style a").removeClass('selected');
+                $("#MCS_" + newStyle).addClass("selected");
+                break;
+            case 1:
+            case 'CandleStickHLC':
+                newStyle = 'CandleStickHLC';
+                $("#chart_select_chart_style a").removeClass('selected');
+                $("#MCS_" + newStyle).addClass("selected");
+                break;
+            case 2:
+            case 'OHLC':
+                newStyle = 'OHLC';
+                $("#chart_select_chart_style a").removeClass('selected');
+                $("#MCS_" + newStyle).addClass("selected");
+                break;
+            default:
+                console.log('ERROR: Unrecognized style');
+                return;
+
+        }
+        mgr.setChartStyle("frame0.k0", newStyle);
+        mgr.redraw();
     }
     
     /*********************************************

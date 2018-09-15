@@ -31,19 +31,21 @@
         element: "#kline_container",
         theme: 'dark', // light/dark
         language: 'zh-cn', // zh-cn/en-us/zh-tw
-        ranges: ["1w", "1d", "1h", "30m", "15m", "5m", "1m", "line"],
+        ranges: ["1w", "1d", "1h", "30m", "15m", "5m", "1m"],
         symbol: "btcusdt",
         symbolName: "BTC/USD",
         type: "poll",
-        //url: 'http://47.52.175.204:8082/getKlines',
+        url: 'http://47.52.175.204:8082/getKlines',
         //url: "http://kline.zch-zcr.top/index.php/index/index/test2",
-        url: "./mock.json",
+        //url: "./mock.json",
         limit: 100,
         intervalTime: 60000,
         debug: true,
         showTrade: false,
         isFullScreen: false,
+        autoIntervalTime: true,
         rotate:0,
+        defaultMainStyle: 1,
         onResize: function(width, height) {
             console.log("chart resized: " + width + " " + height);
         },

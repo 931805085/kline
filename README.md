@@ -170,7 +170,7 @@ $ npm install kline
 |`rotate`       |旋转90度的次数|0
 |`dealMouseWheelEvent` | 是否处理鼠标滚轮事件| true
 |`autoIntervalTime`    |是否自动从服务器端获取刷新间隔打开之后要求服务器端实现next数据的计算|false
-
+|`defaultMainStyle`    |默认的主图样式（取值为0：CandleStick，1：CandleStickHLC，2：OHLC）| 0
 
 
 ### Methods
@@ -275,46 +275,53 @@ kline.resend();
 
     开启或关闭监视器,本操作必须放在draw()之后
 
-```
-kline.switchIndic(true);
-kline.switchIndic(false);
 ```javascript
+kline.switchIndic(true);
+```
 
 * switchToolbar :function(status)
 
     开启或关闭工具栏,本操作必须放在draw()之后
 
-```
-kline.switchToolbar(true);
-kline.switchToolbar(false);
 ```javascript
+kline.switchToolbar(true);
+```
 
 * sizeKline :function(isFullScreen)
 
     是否显示为全屏
 
-```
-kline.sizeKline(true);
-kline.sizeKline(false);
 ```javascript
+kline.sizeKline(true);
+```
 
 * switchRotate :function(rotate)
 
     设置翻转的角度，rotate是取值0~3,取值每增加1，就多翻转90度。
 
-```
-kline.switchRotate(0);
-kline.switchRotate(3);
 ```javascript
+kline.switchRotate(0);
+```
 
 * adjustScale :function(newScale)
 
     调整数据显示的缩放比例，正数为放大，负数为缩小
 
-```
-kline.adjustScale(-10);
-kline.adjustScale(10);
 ```javascript
+kline.adjustScale(-10);
+```
+
+* switchMainChartStyle :function(newStyle)
+
+    设置主图样式,可用的取值为：0~2，或样式名称如：CandleStick
+
+```javascript
+kline.switchMainChartStyle(0);
+```
+
+```javascript
+kline.switchMainChartStyle("CandleStick");
+```
 
 
 ### Events
@@ -336,7 +343,7 @@ kline.adjustScale(10);
         symbol: "BTC",
         symbolName: "比特币",
         type: "poll", // poll/stomp
-        url: "http://127.0.0.1:8080/mock.json",
+        url: "./mock.json",
         onResize: function(width, height) {
             console.log("chart resized: " + width + " " + height);
         }
@@ -345,12 +352,14 @@ kline.adjustScale(10);
 ### Request
 
 * 表单的字段如下：
-*   `symbol`          标识符，用于指定币种或股票
-*   `range`           刷新的周期
-*   `since`           请求数据的起始时间（13位时间戳）（本字段与before互斥，取决于type）
-*   `before`          请求数据的最末时间（13位时间戳）（本字段与since互斥，取决于type）
-*   `type`            决定请求的类型，可选值为：history,realtime(区分大小写)
-*   `prevTradeTime`   最后一次交易的时间（13位时间戳）
+| 表单字段名                 |   说明
+|:-----------------------|:------------
+|   `symbol`         |标识符，用于指定币种或股票
+|   `range`          |刷新的周期
+|   `since`          |请求数据的起始时间（13位时间戳）（本字段与before互斥，取决于type）
+|   `before`         |请求数据的最末时间（13位时间戳）（本字段与since互斥，取决于type）
+|   `type`           |决定请求的类型，可选值为：history,realtime(区分大小写)
+|   `prevTradeTime`  |最后一次交易的时间（13位时间戳）
 
 ### Response
 

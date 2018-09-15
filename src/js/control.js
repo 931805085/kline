@@ -162,13 +162,17 @@ export class Control {
 
         let intervalTime = Kline.instance.intervalTime < Kline.instance.range ? Kline.instance.intervalTime : Kline.instance.range;
 
-        if (!Kline.instance.autoIntervalTime) {
+        if (Kline.instance.autoIntervalTime) {
             let next = Kline.instance.data.next;
             if (next) {
                 intervalTime = next;
             } else {
                 intervalTime = Kline.instance.range;
             }
+            if (Kline.instance.debug) {
+                console.log("DEBUG: set interval time:", intervalTime);
+            }
+            Kline.instance.intervalTime = intervalTime;
         } else {
             intervalTime = Kline.instance.intervalTime < Kline.instance.range ? Kline.instance.intervalTime : Kline.instance.range;
         }
@@ -179,6 +183,8 @@ export class Control {
             }
             return;
         }
+        Control.clearRefreshCounter();
+        
         if (Kline.instance.data.trades && Kline.instance.data.trades.length > 0) {
             KlineTrade.instance.pushTrades(Kline.instance.data.trades);
             KlineTrade.instance.klineTradeInit = true;
@@ -186,8 +192,7 @@ export class Control {
         if (Kline.instance.data.depths) {
             KlineTrade.instance.updateDepth(Kline.instance.data.depths);
         }
-        Control.clearRefreshCounter();
-
+        
         if (Kline.instance.type === 'poll') {
             Kline.instance.timer = setTimeout(Control.TwoSecondThread, intervalTime);
         }
